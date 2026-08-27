@@ -1,0 +1,53 @@
+# macOS
+.DS_Store
+
+# Entornos y secretos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editores
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Dependencias y compilaciones
+node_modules/
+build/
+dist/
+coverage/
+
+# Archivos temporales
+*.tmp
+*.swp# macOS
+.DS_Store
+
+# Entornos y secretos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editores
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Dependencias y compilaciones
+node_modules/
+build/
+dist/
+coverage/
+
+# Archivos temporales
+*.tmp
+*.swp
