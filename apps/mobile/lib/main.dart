@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:riderbiz_mobile/scanner_screen.dart';
 
 void main() {
   runApp(RiderBizValidationApp(store: LocalPackageStore()));
@@ -87,6 +88,7 @@ class PackageValidationScreen extends StatefulWidget {
 class _PackageValidationScreenState extends State<PackageValidationScreen> {
   SyntheticPackage? _package;
   bool _isBusy = true;
+  String? _lastScannedCode;
 
   @override
   void initState() {
@@ -139,6 +141,20 @@ class _PackageValidationScreenState extends State<PackageValidationScreen> {
     await _reload();
   }
 
+  Future<void> _openScanner() async {
+    final scannedCode = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const SyntheticScannerScreen()),
+    );
+
+    if (!mounted || scannedCode == null) {
+      return;
+    }
+
+    setState(() {
+      _lastScannedCode = scannedCode;
+    });
+  }
+
   String _statusLabel(DeliveryStatus status) {
     return switch (status) {
       DeliveryStatus.pending => 'Pendiente',
@@ -186,6 +202,21 @@ class _PackageValidationScreenState extends State<PackageValidationScreen> {
                           : null,
                       child: const Text('Marcar como entregado'),
                     ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _package == null ? null : _openScanner,
+                      icon: const Icon(Icons.qr_code_scanner),
+                      label: const Text('Leer QR sintético'),
+                    ),
+                    if (_lastScannedCode != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        _lastScannedCode == _package?.id
+                            ? 'Código sintético válido: $_lastScannedCode'
+                            : 'El código leído no coincide con el paquete local.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     TextButton(
                       onPressed: _package == null ? null : _deletePackage,

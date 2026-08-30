@@ -66,5 +66,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>RiderBiz utiliza la cámara para leer códigos sintéticos durante la validación técnica.</string>
 </dict>
 </plist>
