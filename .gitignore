@@ -51,3 +51,6 @@ coverage/
 # Archivos temporales
 *.tmp
 *.swp
+
+# FVM Version Cache
+.fvm/
