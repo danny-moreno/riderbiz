@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:riderbiz_mobile/scanner_screen.dart';
+import 'package:riderbiz_mobile/location_validation_service.dart';
 
 void main() {
   runApp(RiderBizValidationApp(store: LocalPackageStore()));
@@ -89,7 +90,11 @@ class _PackageValidationScreenState extends State<PackageValidationScreen> {
   SyntheticPackage? _package;
   bool _isBusy = true;
   String? _lastScannedCode;
+  final LocationValidationService _locationService =
+      LocationValidationService();
 
+  String? _locationMessage;
+  bool _isLocating = false;
   @override
   void initState() {
     super.initState();
@@ -155,6 +160,24 @@ class _PackageValidationScreenState extends State<PackageValidationScreen> {
     });
   }
 
+  Future<void> _validateLocation() async {
+    setState(() {
+      _isLocating = true;
+      _locationMessage = null;
+    });
+
+    final message = await _locationService.validateCurrentLocation();
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isLocating = false;
+      _locationMessage = message;
+    });
+  }
+
   String _statusLabel(DeliveryStatus status) {
     return switch (status) {
       DeliveryStatus.pending => 'Pendiente',
@@ -216,6 +239,20 @@ class _PackageValidationScreenState extends State<PackageValidationScreen> {
                             : 'El código leído no coincide con el paquete local.',
                         textAlign: TextAlign.center,
                       ),
+                    ],
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _isLocating ? null : _validateLocation,
+                      icon: const Icon(Icons.my_location),
+                      label: Text(
+                        _isLocating
+                            ? 'Obteniendo ubicación…'
+                            : 'Validar ubicación',
+                      ),
+                    ),
+                    if (_locationMessage != null) ...[
+                      const SizedBox(height: 16),
+                      Text(_locationMessage!, textAlign: TextAlign.center),
                     ],
                     const SizedBox(height: 12),
                     TextButton(

@@ -68,5 +68,7 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>RiderBiz utiliza la cámara para leer códigos sintéticos durante la validación técnica.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>RiderBiz utiliza tu ubicación únicamente durante esta prueba técnica y no almacena las coordenadas.</string>
 </dict>
 </plist>
