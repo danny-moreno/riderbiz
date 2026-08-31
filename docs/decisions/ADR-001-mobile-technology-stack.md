@@ -2,7 +2,7 @@
 
 ## Estado
 
-Propuesto
+Aceptado
 
 ## Fecha
 
@@ -211,25 +211,37 @@ Escala:
 | Dependencia tecnológica | 2 | 3 | 4 | 5 | 5 |
 | **Resultado ponderado** | **100** | **92,2** | **82,4** | **75,6** | **74,4** |
 
-Las puntuaciones son una evaluación técnica razonada, no mediciones experimentales. Deberán revisarse después de la prueba técnica.
+Las puntuaciones son una evaluación técnica razonada. La prueba RB-SPIKE-005 confirmó que Flutter cubre las capacidades esenciales evaluadas. Deberán revisarse si cambian significativamente los requisitos, el equipo o el entorno tecnológico.
 
-## 9. Decisión provisional
+## 9. Decisión aceptada
 
-RiderBiz V1 adoptará provisionalmente Flutter para construir la aplicación móvil Android e iOS desde una base de código compartida.
+RiderBiz V1 adoptará Flutter para construir la aplicación móvil Android e iOS desde una base de código compartida.
 
 La aplicación seguirá una arquitectura local-first. Las operaciones críticas de la primera vertical slice deberán funcionar sin backend y sin una conexión permanente.
 
-La aprobación definitiva queda condicionada a una prueba técnica que valide:
+La decisión se acepta tras completar la prueba técnica `RB-SPIKE-005`, que validó:
 
 - Ejecución en Android e iOS.
+
+- Ejecución en un dispositivo Android físico.
+
 - Persistencia local.
+
 - Funcionamiento sin conexión.
-- Acceso a cámara.
-- Lectura de un código sintético.
-- Geolocalización controlada.
-- Pruebas automatizadas.
-- Rendimiento en dispositivos físicos.
-- Mantenimiento y seguridad de dependencias.
+
+- Acceso controlado a cámara.
+
+- Lectura de un código QR sintético.
+
+- Geolocalización con permiso explícito.
+
+- Análisis estático.
+
+- Pruebas automatizadas de dominio.
+
+- Validación manual de la interfaz.
+
+No se identificó ningún riesgo bloqueante para utilizar Flutter como tecnología móvil inicial.
 
 Esta decisión no selecciona todavía la base de datos, backend, mapas, OCR ni motor de optimización.
 
@@ -270,7 +282,7 @@ Mitigación:
 
 Mitigación:
 
-- Probar cámara, códigos, ubicación y persistencia antes de aprobar definitivamente.
+- Mantener pruebas continuas de cámara, códigos, ubicación y persistencia durante la evolución del producto.
 - Mantener la posibilidad de implementar código nativo.
 - No comprometer la arquitectura con un plugin antes de validarlo.
 
@@ -303,24 +315,41 @@ Mitigación:
 - Documentar integraciones nativas.
 - Revisar periódicamente el ADR.
 
-## 13. Plan de validación técnica
+## 13. Resultado del plan de validación técnica
 
-La prueba técnica deberá demostrar:
+La prueba técnica quedó documentada en:
 
-1. Proyecto Flutter reproducible.
-2. Aplicación ejecutable en simulador iOS.
-3. Aplicación ejecutable en emulador Android.
-4. Ejecución en al menos un dispositivo físico.
-5. Registro local de un paquete sintético.
-6. Lectura posterior sin conexión.
-7. Cambio de estado de entrega.
-8. Lectura de un código sintético.
-9. Obtención de ubicación con permiso explícito.
-10. Pruebas unitarias y de interfaz.
-11. Análisis estático sin errores.
-12. Registro de resultados y limitaciones.
+- `docs/engineering/validation/RB-SPIKE-005-flutter-validation.md`
 
-La prueba no utilizará etiquetas, direcciones, teléfonos ni datos personales reales.
+Resultados:
+
+1. Proyecto Flutter reproducible: APROBADO.
+
+2. Aplicación ejecutable en simulador iOS: APROBADO.
+
+3. Aplicación ejecutable en emulador Android: APROBADO.
+
+4. Ejecución en dispositivo Android físico: APROBADO.
+
+5. Registro local de un paquete sintético: APROBADO.
+
+6. Lectura posterior sin conexión: APROBADO.
+
+7. Cambio de estado de entrega: APROBADO.
+
+8. Lectura de un código sintético: APROBADO.
+
+9. Obtención de ubicación con permiso explícito: APROBADO.
+
+10. Pruebas automatizadas de dominio: APROBADO.
+
+11. Análisis estático sin errores: APROBADO.
+
+12. Registro de resultados y limitaciones: APROBADO.
+
+La interfaz fue validada manualmente en Android, iOS y dispositivo Android físico. Las pruebas automatizadas de interfaz e integración quedan como trabajo posterior.
+
+La prueba no utilizó etiquetas, direcciones, teléfonos ni datos personales reales.
 
 ## 14. Condiciones de revisión
 
@@ -370,13 +399,29 @@ Requerirán ADR independientes:
 Estado actual:
 
 ```text
-
-PROPUESTO — pendiente de prueba técnica
+ACEPTADO — validación técnica completada con condiciones no bloqueantes
 ```
 
-El ADR podrá pasar a `ACEPTADO` cuando la prueba técnica cumpla los criterios definidos y no aparezca un riesgo bloqueante.
+Flutter queda aprobado como tecnología móvil inicial para RiderBiz V1.
+
+Condiciones posteriores:
+
+- Validar cámara, permisos, firma y rendimiento en un iPhone físico.
+
+- Seleccionar persistencia estructurada mediante un ADR independiente.
+
+- Medir rendimiento, memoria y batería con cargas de 60–120 paquetes.
+
+- Incorporar pruebas automatizadas de interfaz e integración.
+
+- Revisar advertencias de compatibilidad cuando se actualicen Flutter, Android SDK, Gradle o Xcode.
+
+Estas condiciones no bloquean el inicio de la primera vertical slice.
 
 ## 18. Historial
 
 - Versión 0.1: estructura y criterios iniciales.
+
 - Versión 0.2: evaluación comparativa, decisión provisional, consecuencias, riesgos y plan de validación.
+
+- Versión 0.3: Flutter aceptado tras RB-SPIKE-005, con condiciones no bloqueantes documentadas.
