@@ -42,6 +42,8 @@ class SyntheticPackages extends Table {
     "CHECK (status IN ('pending', 'delivered', 'failed'))",
   )();
 
+  TextColumn get externalReference => text().nullable()();
+
   DateTimeColumn get createdAt => dateTime()();
 
   DateTimeColumn get updatedAt => dateTime()();
@@ -78,11 +80,19 @@ class RiderBizDatabase extends _$RiderBizDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        await migrator.addColumn(
+          syntheticPackages,
+          syntheticPackages.externalReference,
+        );
+      }
+    },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
     },
   );
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 }

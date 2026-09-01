@@ -621,6 +621,18 @@ class $SyntheticPackagesTable extends SyntheticPackages
     $customConstraints: 'NOT NULL DEFAULT \'pending\' CHECK (status IN (\'pending\', \'delivered\', \'failed\'))',
     defaultValue: const CustomExpression('\'pending\''),
   );
+  static const VerificationMeta _externalReferenceMeta = const VerificationMeta(
+    'externalReference',
+  );
+  @override
+  late final GeneratedColumn<String> externalReference =
+      GeneratedColumn<String>(
+        'external_reference',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -663,6 +675,7 @@ class $SyntheticPackagesTable extends SyntheticPackages
     id,
     deliveryRunId,
     status,
+    externalReference,
     createdAt,
     updatedAt,
     needsSync,
@@ -699,6 +712,15 @@ class $SyntheticPackagesTable extends SyntheticPackages
       context.handle(
         _statusMeta,
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('external_reference')) {
+      context.handle(
+        _externalReferenceMeta,
+        externalReference.isAcceptableOrUnknown(
+          data['external_reference']!,
+          _externalReferenceMeta,
+        ),
       );
     }
     if (data.containsKey('created_at')) {
@@ -744,6 +766,10 @@ class $SyntheticPackagesTable extends SyntheticPackages
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      externalReference: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}external_reference'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -770,6 +796,7 @@ class SyntheticPackage extends DataClass
   final String id;
   final String deliveryRunId;
   final String status;
+  final String? externalReference;
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool needsSync;
@@ -777,6 +804,7 @@ class SyntheticPackage extends DataClass
     required this.id,
     required this.deliveryRunId,
     required this.status,
+    this.externalReference,
     required this.createdAt,
     required this.updatedAt,
     required this.needsSync,
@@ -787,6 +815,9 @@ class SyntheticPackage extends DataClass
     map['id'] = Variable<String>(id);
     map['delivery_run_id'] = Variable<String>(deliveryRunId);
     map['status'] = Variable<String>(status);
+    if (!nullToAbsent || externalReference != null) {
+      map['external_reference'] = Variable<String>(externalReference);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['needs_sync'] = Variable<bool>(needsSync);
@@ -798,6 +829,9 @@ class SyntheticPackage extends DataClass
       id: Value(id),
       deliveryRunId: Value(deliveryRunId),
       status: Value(status),
+      externalReference: externalReference == null && nullToAbsent
+          ? const Value.absent()
+          : Value(externalReference),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       needsSync: Value(needsSync),
@@ -813,6 +847,9 @@ class SyntheticPackage extends DataClass
       id: serializer.fromJson<String>(json['id']),
       deliveryRunId: serializer.fromJson<String>(json['deliveryRunId']),
       status: serializer.fromJson<String>(json['status']),
+      externalReference: serializer.fromJson<String?>(
+        json['externalReference'],
+      ),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       needsSync: serializer.fromJson<bool>(json['needsSync']),
@@ -825,6 +862,7 @@ class SyntheticPackage extends DataClass
       'id': serializer.toJson<String>(id),
       'deliveryRunId': serializer.toJson<String>(deliveryRunId),
       'status': serializer.toJson<String>(status),
+      'externalReference': serializer.toJson<String?>(externalReference),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'needsSync': serializer.toJson<bool>(needsSync),
@@ -835,6 +873,7 @@ class SyntheticPackage extends DataClass
     String? id,
     String? deliveryRunId,
     String? status,
+    Value<String?> externalReference = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? needsSync,
@@ -842,6 +881,9 @@ class SyntheticPackage extends DataClass
     id: id ?? this.id,
     deliveryRunId: deliveryRunId ?? this.deliveryRunId,
     status: status ?? this.status,
+    externalReference: externalReference.present
+        ? externalReference.value
+        : this.externalReference,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     needsSync: needsSync ?? this.needsSync,
@@ -853,6 +895,9 @@ class SyntheticPackage extends DataClass
           ? data.deliveryRunId.value
           : this.deliveryRunId,
       status: data.status.present ? data.status.value : this.status,
+      externalReference: data.externalReference.present
+          ? data.externalReference.value
+          : this.externalReference,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       needsSync: data.needsSync.present ? data.needsSync.value : this.needsSync,
@@ -865,6 +910,7 @@ class SyntheticPackage extends DataClass
           ..write('id: $id, ')
           ..write('deliveryRunId: $deliveryRunId, ')
           ..write('status: $status, ')
+          ..write('externalReference: $externalReference, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('needsSync: $needsSync')
@@ -873,8 +919,15 @@ class SyntheticPackage extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, deliveryRunId, status, createdAt, updatedAt, needsSync);
+  int get hashCode => Object.hash(
+    id,
+    deliveryRunId,
+    status,
+    externalReference,
+    createdAt,
+    updatedAt,
+    needsSync,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -882,6 +935,7 @@ class SyntheticPackage extends DataClass
           other.id == this.id &&
           other.deliveryRunId == this.deliveryRunId &&
           other.status == this.status &&
+          other.externalReference == this.externalReference &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.needsSync == this.needsSync);
@@ -891,6 +945,7 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
   final Value<String> id;
   final Value<String> deliveryRunId;
   final Value<String> status;
+  final Value<String?> externalReference;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> needsSync;
@@ -899,6 +954,7 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     this.id = const Value.absent(),
     this.deliveryRunId = const Value.absent(),
     this.status = const Value.absent(),
+    this.externalReference = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.needsSync = const Value.absent(),
@@ -908,6 +964,7 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     required String id,
     required String deliveryRunId,
     this.status = const Value.absent(),
+    this.externalReference = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.needsSync = const Value.absent(),
@@ -920,6 +977,7 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     Expression<String>? id,
     Expression<String>? deliveryRunId,
     Expression<String>? status,
+    Expression<String>? externalReference,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<bool>? needsSync,
@@ -929,6 +987,7 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
       if (id != null) 'id': id,
       if (deliveryRunId != null) 'delivery_run_id': deliveryRunId,
       if (status != null) 'status': status,
+      if (externalReference != null) 'external_reference': externalReference,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (needsSync != null) 'needs_sync': needsSync,
@@ -940,6 +999,7 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     Value<String>? id,
     Value<String>? deliveryRunId,
     Value<String>? status,
+    Value<String?>? externalReference,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<bool>? needsSync,
@@ -949,6 +1009,7 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
       id: id ?? this.id,
       deliveryRunId: deliveryRunId ?? this.deliveryRunId,
       status: status ?? this.status,
+      externalReference: externalReference ?? this.externalReference,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       needsSync: needsSync ?? this.needsSync,
@@ -967,6 +1028,9 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
+    }
+    if (externalReference.present) {
+      map['external_reference'] = Variable<String>(externalReference.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -989,6 +1053,7 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
           ..write('id: $id, ')
           ..write('deliveryRunId: $deliveryRunId, ')
           ..write('status: $status, ')
+          ..write('externalReference: $externalReference, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('needsSync: $needsSync, ')
@@ -2088,6 +2153,7 @@ typedef $$SyntheticPackagesTableCreateCompanionBuilder =
       required String id,
       required String deliveryRunId,
       Value<String> status,
+      Value<String?> externalReference,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<bool> needsSync,
@@ -2098,6 +2164,7 @@ typedef $$SyntheticPackagesTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> deliveryRunId,
       Value<String> status,
+      Value<String?> externalReference,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> needsSync,
@@ -2171,6 +2238,11 @@ class $$SyntheticPackagesTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get externalReference => $composableBuilder(
+    column: $table.externalReference,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2257,6 +2329,11 @@ class $$SyntheticPackagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get externalReference => $composableBuilder(
+    column: $table.externalReference,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -2310,6 +2387,11 @@ class $$SyntheticPackagesTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get externalReference => $composableBuilder(
+    column: $table.externalReference,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -2405,6 +2487,7 @@ class $$SyntheticPackagesTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> deliveryRunId = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> externalReference = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> needsSync = const Value.absent(),
@@ -2413,6 +2496,7 @@ class $$SyntheticPackagesTableTableManager
                 id: id,
                 deliveryRunId: deliveryRunId,
                 status: status,
+                externalReference: externalReference,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 needsSync: needsSync,
@@ -2423,6 +2507,7 @@ class $$SyntheticPackagesTableTableManager
                 required String id,
                 required String deliveryRunId,
                 Value<String> status = const Value.absent(),
+                Value<String?> externalReference = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<bool> needsSync = const Value.absent(),
@@ -2431,6 +2516,7 @@ class $$SyntheticPackagesTableTableManager
                 id: id,
                 deliveryRunId: deliveryRunId,
                 status: status,
+                externalReference: externalReference,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 needsSync: needsSync,
