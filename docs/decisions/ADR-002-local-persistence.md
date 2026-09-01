@@ -2,7 +2,7 @@
 
 ## Estado
 
-Propuesto
+Aceptado
 
 ## Fecha
 
@@ -241,25 +241,40 @@ Limitaciones:
 
 Las puntuaciones representan una evaluación arquitectónica razonada, no una medición experimental de rendimiento.
 
-Drift obtiene el resultado provisional más favorable porque combina SQLite, consultas tipadas, modelo relacional y herramientas específicas para migraciones. La diferencia frente a `sqflite` procede principalmente de la reducción de código manual y del soporte para verificar el esquema y sus migraciones.
+Drift obtuvo el resultado más favorable porque combina SQLite, consultas tipadas, modelo relacional y herramientas específicas para migraciones. La diferencia frente a `sqflite` procede principalmente de la reducción de código manual y del soporte para verificar el esquema y sus migraciones.
 
+La prueba `RB-SPIKE-009` confirmó experimentalmente las capacidades esenciales evaluadas.
 
-## 10. Decisión provisional
+## 10. Decisión aceptada
 
-Drift sobre SQLite es la alternativa propuesta para la persistencia local estructurada de RiderBiz V1.
+RiderBiz V1 utilizará Drift sobre SQLite para su persistencia local estructurada.
 
-La decisión permanece en estado `PROPUESTO` hasta completar una prueba técnica que valide:
+La decisión se acepta tras completar `RB-SPIKE-009`, que validó:
 
-- Creación de un modelo relacional mínimo.
-- Escritura y lectura sin conexión.
-- Relaciones entre entidades.
-- Transacciones y restricciones.
-- Consultas filtradas.
-- Migración entre dos versiones del esquema.
+- Modelo relacional para operadores, jornadas, paquetes y eventos.
+- Integridad referencial mediante claves foráneas.
+- Transacciones y rollback.
+- Consultas filtradas y actualizaciones.
+- Persistencia física después de cerrar y reabrir SQLite.
+- Migración verificada desde el esquema v1 al v2.
+- Conservación de datos durante la migración.
 - Pruebas automatizadas.
-- Ejecución en Android e iOS.
+- Ejecución nativa en Android e iOS.
+- Compilación Android e iOS.
+- Funcionamiento sin backend y sin conexión de red.
 
-No se instalará Drift en esta rama documental. La prueba técnica deberá ejecutarse mediante una Issue y una rama independientes.
+No se identificó ningún riesgo bloqueante.
+
+Condiciones no bloqueantes:
+
+- Mantener Drift detrás de repositorios o interfaces.
+- Crear una decisión independiente para la sincronización.
+- Evaluar cifrado antes de almacenar información sensible.
+- Probar rendimiento, memoria y batería con cargas representativas.
+- Repetir la validación en dispositivos físicos antes de la distribución externa.
+- Conservar snapshots y pruebas para cada migración del esquema.
+
+`shared_preferences` podrá seguir utilizándose para preferencias simples, pero no será el almacenamiento principal de datos operativos.
 
 
 ## 11. Fuentes oficiales
@@ -272,6 +287,9 @@ No se instalará Drift en esta rama documental. La prueba técnica deberá ejecu
 - Isar: https://isar.dev/
 - Versiones publicadas de Isar: https://pub.dev/packages/isar/versions
 
+- Evidencia técnica interna: `docs/engineering/validation/RB-SPIKE-009-drift-validation.md`
+
 ## 12. Historial
 
 - Versión 0.1: contexto, alcance, requisitos, alternativas y criterios iniciales.
+- Versión 0.2: Drift aceptado tras RB-SPIKE-009, con condiciones no bloqueantes.
