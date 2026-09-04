@@ -111,6 +111,116 @@ La dirección suele aparecer debajo del nombre y la captura puede contener ambos
 
 Cualquier OCR remoto futuro requerirá otro ADR, análisis de riesgos, revisión contractual, evaluación de transferencias y aprobación jurídica.
 
+### 5.1 Identificación del operador logístico
+
+Durante la lectura de la etiqueta, RiderBiz identificará también el operador logístico responsable del paquete.
+
+La identificación utilizará una estrategia escalonada y verificable:
+
+1. Identificadores deterministas disponibles en códigos, prefijos, texto o metadatos de la etiqueta.
+2. Reconocimiento del nombre, logotipo y elementos visuales característicos.
+3. Clasificación del modelo de etiqueta mediante un sistema de IA cuando los métodos anteriores no sean suficientes.
+4. Confirmación manual del repartidor cuando la confianza sea inferior al umbral establecido.
+
+El resultado se normalizará mediante un `operator_id` interno. La etiqueta original, la imagen y el texto OCR completo seguirán siendo transitorios y se eliminarán conforme a las reglas de este ADR.
+
+La aplicación mostrará el operador detectado junto con un indicador de confianza. Una identificación dudosa no se contabilizará automáticamente como definitiva.
+
+### 5.2 Aprendizaje controlado de modelos de etiquetas
+
+RiderBiz podrá mejorar progresivamente la identificación de los distintos modelos de etiquetas de cada operador, pero no entrenará modelos generativos automáticamente con etiquetas reales que contengan nombres, direcciones, teléfonos, códigos de seguimiento u otros datos personales.
+
+El aprendizaje se realizará mediante:
+
+- Plantillas sintéticas.
+- Imágenes anonimizadas o redactadas de forma irreversible.
+- Rasgos no personales, como estructura, logotipo, tipografía, posición de campos y patrones del operador.
+- Conjuntos de entrenamiento, validación y prueba versionados.
+- Revisión humana de las nuevas clases y variantes.
+- Métricas documentadas de precisión, falsos positivos, falsos negativos y confianza.
+
+Las correcciones manuales podrán generar evidencia de mejora, pero antes de incorporarse a un conjunto de aprendizaje deberán eliminarse todos los datos personales y validarse la finalidad, procedencia, licencia, retención y trazabilidad del material.
+
+El sistema no realizará aprendizaje continuo autónomo en producción. La publicación de un modelo nuevo exigirá validación controlada, versión identificable y posibilidad de reversión.
+
+### 5.3 Separación entre operación y contabilidad
+
+La identidad del operador logístico no se considera por sí sola un dato del destinatario y podrá conservarse como dato operativo y contable cuando se separe de cualquier información que permita identificar a una persona o reconstruir una entrega concreta.
+
+Por cada resultado consolidado, RiderBiz podrá conservar:
+
+```text
+operator_id
+service_date
+delivery_status
+delivered_package_count
+tariff_id
+tariff_version
+unit_price_snapshot
+calculated_amount
+```
+
+Esto permitirá generar informes diarios, semanales y mensuales con:
+
+- Paquetes entregados por operador.
+- Paquetes no entregados por operador cuando la métrica esté justificada.
+- Precio aplicable por paquete entregado.
+- Importe calculado por operador y periodo.
+- Totales consolidados del repartidor.
+
+La tarifa se gestionará en una tabla separada, con vigencia temporal y versión, porque un mismo operador puede aplicar precios diferentes según contrato, servicio o fecha. El precio histórico utilizado en un cálculo no dependerá de conservar el nombre o la dirección del destinatario.
+
+No se conservarán en la contabilidad nombres, domicilios, imágenes, texto OCR completo, coordenadas precisas ni códigos de seguimiento que permitan reidentificar al destinatario.
+
+### 5.4 Primera configuración de operadores y tarifas
+
+Antes de iniciar una jornada operativa, el usuario deberá configurar al menos un operador logístico con una tarifa vigente por paquete entregado.
+
+La configuración mínima exigirá:
+
+```text
+operator_id
+display_name
+unit_price
+currency
+valid_from
+```
+
+La aplicación permitirá acceder a funciones informativas, pero no iniciar una jornada ni calcular ingresos mientras no exista al menos un operador activo con una tarifa válida.
+
+El flujo será breve y permitirá añadir varios operadores antes de continuar:
+
+```text
+OPERADOR LOGÍSTICO
+GLS
+
+TARIFA
+1,25 EUR por paquete entregado
+
+VIGENTE DESDE
+04/09/2026
+
+[ AÑADIR OTRO OPERADOR ]
+[ GUARDAR Y CONTINUAR ]
+```
+
+### 5.5 Configuración posterior y vigencia de tarifas
+
+RiderBiz incluirá la ruta:
+
+```text
+Configuración
+→ Operadores y tarifas
+```
+
+Desde ella, el usuario podrá añadir operadores, crear nuevas tarifas, establecer su fecha de entrada en vigor, consultar el historial y desactivar operadores.
+
+Una actualización de precio no sobrescribirá tarifas anteriores ni recalculará informes cerrados. Cada tarifa tendrá un periodo de vigencia y cada cálculo conservará `unit_price_snapshot`, `tariff_id` y `tariff_version`.
+
+Los operadores con actividad histórica se desactivarán en lugar de eliminarse, para preservar la coherencia de los informes económicos sin conservar datos personales del destinatario.
+
+La V1 utilizará una única tarifa principal por paquete entregado y operador. Las variantes por peso, zona, servicio, urgencia, reintento, recogida o devolución requerirán evidencia contractual y una decisión posterior.
+
 ## 6. Dirección internacional
 
 RiderBiz no asumirá que todos los códigos postales son numéricos, tienen cinco caracteres o son obligatorios.
@@ -330,6 +440,7 @@ Podrá contener durante la jornada:
 - Zona del vehículo.
 - Estado operativo y reintentos.
 - Última ubicación estrictamente necesaria.
+- Etiqueta de operador detectada y nivel de confianza mientras esté pendiente de validación.
 
 ### 14.2 Almacén histórico agregado
 
@@ -338,6 +449,7 @@ Podrá conservar:
 - Fecha y operador.
 - Totales de paquetes.
 - Totales por estado y zona.
+- Tarifa, versión de tarifa, precio unitario aplicado e importe calculado.
 - Hora de inicio y cierre.
 - Distancia y duración agregadas cuando estén justificadas.
 
@@ -446,6 +558,15 @@ Hasta entonces solo se utilizarán etiquetas y datos sintéticos.
 - Solo se estructuran los campos autorizados.
 - La imagen y el texto OCR completo se eliminan tras la extracción.
 - El nombre se usa únicamente para localizar paquetes y distinguir entregas.
+- El operador logístico se identifica mediante reglas deterministas y clasificación controlada.
+- Las identificaciones de baja confianza requieren confirmación manual.
+- Los modelos no aprenden automáticamente de etiquetas reales con datos personales.
+- Los conjuntos de aprendizaje utilizan material sintético o anonimizado y están versionados.
+- Los informes calculan paquetes entregados e importes por operador y periodo.
+- Las tarifas están versionadas y separadas de los datos personales del destinatario.
+- La primera configuración exige al menos un operador y una tarifa vigente.
+- El usuario puede añadir operadores y actualizar precios desde `Configuración → Operadores y tarifas`.
+- Los cambios de precio no alteran los informes históricos cerrados.
 - La aplicación admite perfiles postales por país.
 - La sectorización asigna zonas de forma explicable y corregible.
 - `ENTREGAS ACTIVAS` muestra portales, destinatarios y cantidades sin confirmaciones de recogida.
@@ -485,6 +606,20 @@ Hasta entonces solo se utilizarán etiquetas y datos sintéticos.
 - Mensaje rojo explicativo.
 - Corrección manual sin crear históricos personales.
 
+### Operador logístico incorrecto
+
+- Prioridad a identificadores deterministas.
+- Umbral de confianza y confirmación manual.
+- Catálogo versionado de operadores y modelos de etiqueta.
+- Pruebas por variante y seguimiento de errores sin datos personales.
+
+### Aprendizaje indebido con etiquetas reales
+
+- Prohibición de aprendizaje continuo autónomo en producción.
+- Anonimización irreversible o uso de material sintético.
+- Gobierno de conjuntos de datos y trazabilidad de versiones.
+- Revisión jurídica y técnica antes de incorporar nuevas muestras.
+
 ### Automatización excesiva
 
 - Recomendaciones no obligatorias.
@@ -514,8 +649,11 @@ Hasta entonces solo se utilizarán etiquetas y datos sintéticos.
 - Android Keystore: https://developer.android.com/privacy-and-security/keystore
 - Apple Keychain: https://developer.apple.com/documentation/security/keychain-services
 - WCAG 2.2: https://www.w3.org/TR/WCAG22/
+- Reglamento (UE) 2024/1689 sobre inteligencia artificial: https://eur-lex.europa.eu/eli/reg/2024/1689/oj
 
 ## 25. Historial
 
 - Versión 1.0: tratamiento temporal, conservación por estado y eliminación verificable.
 - Versión 1.1: alcance europeo, expansión mundial, sectorización, entregas activas, selección dinámica de portales y minimización de interacciones.
+- Versión 1.2: identificación del operador logístico, aprendizaje controlado de modelos de etiquetas y agregación económica por operador y tarifa.
+- Versión 1.3: operador y tarifa obligatorios en la primera configuración, administración posterior y vigencia histórica de precios.
