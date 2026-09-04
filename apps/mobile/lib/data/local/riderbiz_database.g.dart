@@ -1732,6 +1732,16 @@ class $SyntheticPackagesTable extends SyntheticPackages
       'REFERENCES operator_tariffs (id) ON DELETE RESTRICT',
     ),
   );
+  static const VerificationMeta _tariffVersionSnapshotMeta =
+      const VerificationMeta('tariffVersionSnapshot');
+  @override
+  late final GeneratedColumn<int> tariffVersionSnapshot = GeneratedColumn<int>(
+    'tariff_version_snapshot',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _unitPriceMinorSnapshotMeta =
       const VerificationMeta('unitPriceMinorSnapshot');
   @override
@@ -1755,6 +1765,17 @@ class $SyntheticPackagesTable extends SyntheticPackages
       maxTextLength: 3,
     ),
     type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deliveredAtMeta = const VerificationMeta(
+    'deliveredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deliveredAt = GeneratedColumn<DateTime>(
+    'delivered_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
@@ -1804,8 +1825,10 @@ class $SyntheticPackagesTable extends SyntheticPackages
     identificationStatus,
     identificationConfidence,
     tariffId,
+    tariffVersionSnapshot,
     unitPriceMinorSnapshot,
     currencySnapshot,
+    deliveredAt,
     createdAt,
     updatedAt,
     needsSync,
@@ -1886,6 +1909,15 @@ class $SyntheticPackagesTable extends SyntheticPackages
         tariffId.isAcceptableOrUnknown(data['tariff_id']!, _tariffIdMeta),
       );
     }
+    if (data.containsKey('tariff_version_snapshot')) {
+      context.handle(
+        _tariffVersionSnapshotMeta,
+        tariffVersionSnapshot.isAcceptableOrUnknown(
+          data['tariff_version_snapshot']!,
+          _tariffVersionSnapshotMeta,
+        ),
+      );
+    }
     if (data.containsKey('unit_price_minor_snapshot')) {
       context.handle(
         _unitPriceMinorSnapshotMeta,
@@ -1901,6 +1933,15 @@ class $SyntheticPackagesTable extends SyntheticPackages
         currencySnapshot.isAcceptableOrUnknown(
           data['currency_snapshot']!,
           _currencySnapshotMeta,
+        ),
+      );
+    }
+    if (data.containsKey('delivered_at')) {
+      context.handle(
+        _deliveredAtMeta,
+        deliveredAt.isAcceptableOrUnknown(
+          data['delivered_at']!,
+          _deliveredAtMeta,
         ),
       );
     }
@@ -1967,6 +2008,10 @@ class $SyntheticPackagesTable extends SyntheticPackages
         DriftSqlType.string,
         data['${effectivePrefix}tariff_id'],
       ),
+      tariffVersionSnapshot: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tariff_version_snapshot'],
+      ),
       unitPriceMinorSnapshot: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}unit_price_minor_snapshot'],
@@ -1974,6 +2019,10 @@ class $SyntheticPackagesTable extends SyntheticPackages
       currencySnapshot: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}currency_snapshot'],
+      ),
+      deliveredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}delivered_at'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -2006,8 +2055,10 @@ class SyntheticPackage extends DataClass
   final String identificationStatus;
   final double? identificationConfidence;
   final String? tariffId;
+  final int? tariffVersionSnapshot;
   final int? unitPriceMinorSnapshot;
   final String? currencySnapshot;
+  final DateTime? deliveredAt;
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool needsSync;
@@ -2020,8 +2071,10 @@ class SyntheticPackage extends DataClass
     required this.identificationStatus,
     this.identificationConfidence,
     this.tariffId,
+    this.tariffVersionSnapshot,
     this.unitPriceMinorSnapshot,
     this.currencySnapshot,
+    this.deliveredAt,
     required this.createdAt,
     required this.updatedAt,
     required this.needsSync,
@@ -2047,11 +2100,17 @@ class SyntheticPackage extends DataClass
     if (!nullToAbsent || tariffId != null) {
       map['tariff_id'] = Variable<String>(tariffId);
     }
+    if (!nullToAbsent || tariffVersionSnapshot != null) {
+      map['tariff_version_snapshot'] = Variable<int>(tariffVersionSnapshot);
+    }
     if (!nullToAbsent || unitPriceMinorSnapshot != null) {
       map['unit_price_minor_snapshot'] = Variable<int>(unitPriceMinorSnapshot);
     }
     if (!nullToAbsent || currencySnapshot != null) {
       map['currency_snapshot'] = Variable<String>(currencySnapshot);
+    }
+    if (!nullToAbsent || deliveredAt != null) {
+      map['delivered_at'] = Variable<DateTime>(deliveredAt);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -2077,12 +2136,18 @@ class SyntheticPackage extends DataClass
       tariffId: tariffId == null && nullToAbsent
           ? const Value.absent()
           : Value(tariffId),
+      tariffVersionSnapshot: tariffVersionSnapshot == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tariffVersionSnapshot),
       unitPriceMinorSnapshot: unitPriceMinorSnapshot == null && nullToAbsent
           ? const Value.absent()
           : Value(unitPriceMinorSnapshot),
       currencySnapshot: currencySnapshot == null && nullToAbsent
           ? const Value.absent()
           : Value(currencySnapshot),
+      deliveredAt: deliveredAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deliveredAt),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       needsSync: Value(needsSync),
@@ -2111,10 +2176,14 @@ class SyntheticPackage extends DataClass
         json['identificationConfidence'],
       ),
       tariffId: serializer.fromJson<String?>(json['tariffId']),
+      tariffVersionSnapshot: serializer.fromJson<int?>(
+        json['tariffVersionSnapshot'],
+      ),
       unitPriceMinorSnapshot: serializer.fromJson<int?>(
         json['unitPriceMinorSnapshot'],
       ),
       currencySnapshot: serializer.fromJson<String?>(json['currencySnapshot']),
+      deliveredAt: serializer.fromJson<DateTime?>(json['deliveredAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       needsSync: serializer.fromJson<bool>(json['needsSync']),
@@ -2134,8 +2203,10 @@ class SyntheticPackage extends DataClass
         identificationConfidence,
       ),
       'tariffId': serializer.toJson<String?>(tariffId),
+      'tariffVersionSnapshot': serializer.toJson<int?>(tariffVersionSnapshot),
       'unitPriceMinorSnapshot': serializer.toJson<int?>(unitPriceMinorSnapshot),
       'currencySnapshot': serializer.toJson<String?>(currencySnapshot),
+      'deliveredAt': serializer.toJson<DateTime?>(deliveredAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'needsSync': serializer.toJson<bool>(needsSync),
@@ -2151,8 +2222,10 @@ class SyntheticPackage extends DataClass
     String? identificationStatus,
     Value<double?> identificationConfidence = const Value.absent(),
     Value<String?> tariffId = const Value.absent(),
+    Value<int?> tariffVersionSnapshot = const Value.absent(),
     Value<int?> unitPriceMinorSnapshot = const Value.absent(),
     Value<String?> currencySnapshot = const Value.absent(),
+    Value<DateTime?> deliveredAt = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? needsSync,
@@ -2171,12 +2244,16 @@ class SyntheticPackage extends DataClass
         ? identificationConfidence.value
         : this.identificationConfidence,
     tariffId: tariffId.present ? tariffId.value : this.tariffId,
+    tariffVersionSnapshot: tariffVersionSnapshot.present
+        ? tariffVersionSnapshot.value
+        : this.tariffVersionSnapshot,
     unitPriceMinorSnapshot: unitPriceMinorSnapshot.present
         ? unitPriceMinorSnapshot.value
         : this.unitPriceMinorSnapshot,
     currencySnapshot: currencySnapshot.present
         ? currencySnapshot.value
         : this.currencySnapshot,
+    deliveredAt: deliveredAt.present ? deliveredAt.value : this.deliveredAt,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     needsSync: needsSync ?? this.needsSync,
@@ -2201,12 +2278,18 @@ class SyntheticPackage extends DataClass
           ? data.identificationConfidence.value
           : this.identificationConfidence,
       tariffId: data.tariffId.present ? data.tariffId.value : this.tariffId,
+      tariffVersionSnapshot: data.tariffVersionSnapshot.present
+          ? data.tariffVersionSnapshot.value
+          : this.tariffVersionSnapshot,
       unitPriceMinorSnapshot: data.unitPriceMinorSnapshot.present
           ? data.unitPriceMinorSnapshot.value
           : this.unitPriceMinorSnapshot,
       currencySnapshot: data.currencySnapshot.present
           ? data.currencySnapshot.value
           : this.currencySnapshot,
+      deliveredAt: data.deliveredAt.present
+          ? data.deliveredAt.value
+          : this.deliveredAt,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       needsSync: data.needsSync.present ? data.needsSync.value : this.needsSync,
@@ -2224,8 +2307,10 @@ class SyntheticPackage extends DataClass
           ..write('identificationStatus: $identificationStatus, ')
           ..write('identificationConfidence: $identificationConfidence, ')
           ..write('tariffId: $tariffId, ')
+          ..write('tariffVersionSnapshot: $tariffVersionSnapshot, ')
           ..write('unitPriceMinorSnapshot: $unitPriceMinorSnapshot, ')
           ..write('currencySnapshot: $currencySnapshot, ')
+          ..write('deliveredAt: $deliveredAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('needsSync: $needsSync')
@@ -2243,8 +2328,10 @@ class SyntheticPackage extends DataClass
     identificationStatus,
     identificationConfidence,
     tariffId,
+    tariffVersionSnapshot,
     unitPriceMinorSnapshot,
     currencySnapshot,
+    deliveredAt,
     createdAt,
     updatedAt,
     needsSync,
@@ -2261,8 +2348,10 @@ class SyntheticPackage extends DataClass
           other.identificationStatus == this.identificationStatus &&
           other.identificationConfidence == this.identificationConfidence &&
           other.tariffId == this.tariffId &&
+          other.tariffVersionSnapshot == this.tariffVersionSnapshot &&
           other.unitPriceMinorSnapshot == this.unitPriceMinorSnapshot &&
           other.currencySnapshot == this.currencySnapshot &&
+          other.deliveredAt == this.deliveredAt &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.needsSync == this.needsSync);
@@ -2277,8 +2366,10 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
   final Value<String> identificationStatus;
   final Value<double?> identificationConfidence;
   final Value<String?> tariffId;
+  final Value<int?> tariffVersionSnapshot;
   final Value<int?> unitPriceMinorSnapshot;
   final Value<String?> currencySnapshot;
+  final Value<DateTime?> deliveredAt;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> needsSync;
@@ -2292,8 +2383,10 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     this.identificationStatus = const Value.absent(),
     this.identificationConfidence = const Value.absent(),
     this.tariffId = const Value.absent(),
+    this.tariffVersionSnapshot = const Value.absent(),
     this.unitPriceMinorSnapshot = const Value.absent(),
     this.currencySnapshot = const Value.absent(),
+    this.deliveredAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.needsSync = const Value.absent(),
@@ -2308,8 +2401,10 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     this.identificationStatus = const Value.absent(),
     this.identificationConfidence = const Value.absent(),
     this.tariffId = const Value.absent(),
+    this.tariffVersionSnapshot = const Value.absent(),
     this.unitPriceMinorSnapshot = const Value.absent(),
     this.currencySnapshot = const Value.absent(),
+    this.deliveredAt = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.needsSync = const Value.absent(),
@@ -2327,8 +2422,10 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     Expression<String>? identificationStatus,
     Expression<double>? identificationConfidence,
     Expression<String>? tariffId,
+    Expression<int>? tariffVersionSnapshot,
     Expression<int>? unitPriceMinorSnapshot,
     Expression<String>? currencySnapshot,
+    Expression<DateTime>? deliveredAt,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<bool>? needsSync,
@@ -2346,9 +2443,12 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
       if (identificationConfidence != null)
         'identification_confidence': identificationConfidence,
       if (tariffId != null) 'tariff_id': tariffId,
+      if (tariffVersionSnapshot != null)
+        'tariff_version_snapshot': tariffVersionSnapshot,
       if (unitPriceMinorSnapshot != null)
         'unit_price_minor_snapshot': unitPriceMinorSnapshot,
       if (currencySnapshot != null) 'currency_snapshot': currencySnapshot,
+      if (deliveredAt != null) 'delivered_at': deliveredAt,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (needsSync != null) 'needs_sync': needsSync,
@@ -2365,8 +2465,10 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     Value<String>? identificationStatus,
     Value<double?>? identificationConfidence,
     Value<String?>? tariffId,
+    Value<int?>? tariffVersionSnapshot,
     Value<int?>? unitPriceMinorSnapshot,
     Value<String?>? currencySnapshot,
+    Value<DateTime?>? deliveredAt,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<bool>? needsSync,
@@ -2382,9 +2484,12 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
       identificationConfidence:
           identificationConfidence ?? this.identificationConfidence,
       tariffId: tariffId ?? this.tariffId,
+      tariffVersionSnapshot:
+          tariffVersionSnapshot ?? this.tariffVersionSnapshot,
       unitPriceMinorSnapshot:
           unitPriceMinorSnapshot ?? this.unitPriceMinorSnapshot,
       currencySnapshot: currencySnapshot ?? this.currencySnapshot,
+      deliveredAt: deliveredAt ?? this.deliveredAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       needsSync: needsSync ?? this.needsSync,
@@ -2425,6 +2530,11 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     if (tariffId.present) {
       map['tariff_id'] = Variable<String>(tariffId.value);
     }
+    if (tariffVersionSnapshot.present) {
+      map['tariff_version_snapshot'] = Variable<int>(
+        tariffVersionSnapshot.value,
+      );
+    }
     if (unitPriceMinorSnapshot.present) {
       map['unit_price_minor_snapshot'] = Variable<int>(
         unitPriceMinorSnapshot.value,
@@ -2432,6 +2542,9 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     }
     if (currencySnapshot.present) {
       map['currency_snapshot'] = Variable<String>(currencySnapshot.value);
+    }
+    if (deliveredAt.present) {
+      map['delivered_at'] = Variable<DateTime>(deliveredAt.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -2459,8 +2572,10 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
           ..write('identificationStatus: $identificationStatus, ')
           ..write('identificationConfidence: $identificationConfidence, ')
           ..write('tariffId: $tariffId, ')
+          ..write('tariffVersionSnapshot: $tariffVersionSnapshot, ')
           ..write('unitPriceMinorSnapshot: $unitPriceMinorSnapshot, ')
           ..write('currencySnapshot: $currencySnapshot, ')
+          ..write('deliveredAt: $deliveredAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('needsSync: $needsSync, ')
@@ -4773,8 +4888,10 @@ typedef $$SyntheticPackagesTableCreateCompanionBuilder =
       Value<String> identificationStatus,
       Value<double?> identificationConfidence,
       Value<String?> tariffId,
+      Value<int?> tariffVersionSnapshot,
       Value<int?> unitPriceMinorSnapshot,
       Value<String?> currencySnapshot,
+      Value<DateTime?> deliveredAt,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<bool> needsSync,
@@ -4790,8 +4907,10 @@ typedef $$SyntheticPackagesTableUpdateCompanionBuilder =
       Value<String> identificationStatus,
       Value<double?> identificationConfidence,
       Value<String?> tariffId,
+      Value<int?> tariffVersionSnapshot,
       Value<int?> unitPriceMinorSnapshot,
       Value<String?> currencySnapshot,
+      Value<DateTime?> deliveredAt,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> needsSync,
@@ -4923,6 +5042,11 @@ class $$SyntheticPackagesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get tariffVersionSnapshot => $composableBuilder(
+    column: $table.tariffVersionSnapshot,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get unitPriceMinorSnapshot => $composableBuilder(
     column: $table.unitPriceMinorSnapshot,
     builder: (column) => ColumnFilters(column),
@@ -4930,6 +5054,11 @@ class $$SyntheticPackagesTableFilterComposer
 
   ColumnFilters<String> get currencySnapshot => $composableBuilder(
     column: $table.currencySnapshot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deliveredAt => $composableBuilder(
+    column: $table.deliveredAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5077,6 +5206,11 @@ class $$SyntheticPackagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get tariffVersionSnapshot => $composableBuilder(
+    column: $table.tariffVersionSnapshot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get unitPriceMinorSnapshot => $composableBuilder(
     column: $table.unitPriceMinorSnapshot,
     builder: (column) => ColumnOrderings(column),
@@ -5084,6 +5218,11 @@ class $$SyntheticPackagesTableOrderingComposer
 
   ColumnOrderings<String> get currencySnapshot => $composableBuilder(
     column: $table.currencySnapshot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deliveredAt => $composableBuilder(
+    column: $table.deliveredAt,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5202,6 +5341,11 @@ class $$SyntheticPackagesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get tariffVersionSnapshot => $composableBuilder(
+    column: $table.tariffVersionSnapshot,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get unitPriceMinorSnapshot => $composableBuilder(
     column: $table.unitPriceMinorSnapshot,
     builder: (column) => column,
@@ -5209,6 +5353,11 @@ class $$SyntheticPackagesTableAnnotationComposer
 
   GeneratedColumn<String> get currencySnapshot => $composableBuilder(
     column: $table.currencySnapshot,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get deliveredAt => $composableBuilder(
+    column: $table.deliveredAt,
     builder: (column) => column,
   );
 
@@ -5363,8 +5512,10 @@ class $$SyntheticPackagesTableTableManager
                 Value<String> identificationStatus = const Value.absent(),
                 Value<double?> identificationConfidence = const Value.absent(),
                 Value<String?> tariffId = const Value.absent(),
+                Value<int?> tariffVersionSnapshot = const Value.absent(),
                 Value<int?> unitPriceMinorSnapshot = const Value.absent(),
                 Value<String?> currencySnapshot = const Value.absent(),
+                Value<DateTime?> deliveredAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> needsSync = const Value.absent(),
@@ -5378,8 +5529,10 @@ class $$SyntheticPackagesTableTableManager
                 identificationStatus: identificationStatus,
                 identificationConfidence: identificationConfidence,
                 tariffId: tariffId,
+                tariffVersionSnapshot: tariffVersionSnapshot,
                 unitPriceMinorSnapshot: unitPriceMinorSnapshot,
                 currencySnapshot: currencySnapshot,
+                deliveredAt: deliveredAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 needsSync: needsSync,
@@ -5395,8 +5548,10 @@ class $$SyntheticPackagesTableTableManager
                 Value<String> identificationStatus = const Value.absent(),
                 Value<double?> identificationConfidence = const Value.absent(),
                 Value<String?> tariffId = const Value.absent(),
+                Value<int?> tariffVersionSnapshot = const Value.absent(),
                 Value<int?> unitPriceMinorSnapshot = const Value.absent(),
                 Value<String?> currencySnapshot = const Value.absent(),
+                Value<DateTime?> deliveredAt = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<bool> needsSync = const Value.absent(),
@@ -5410,8 +5565,10 @@ class $$SyntheticPackagesTableTableManager
                 identificationStatus: identificationStatus,
                 identificationConfidence: identificationConfidence,
                 tariffId: tariffId,
+                tariffVersionSnapshot: tariffVersionSnapshot,
                 unitPriceMinorSnapshot: unitPriceMinorSnapshot,
                 currencySnapshot: currencySnapshot,
+                deliveredAt: deliveredAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 needsSync: needsSync,

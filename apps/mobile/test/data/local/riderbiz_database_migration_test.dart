@@ -69,6 +69,8 @@ void main() {
     expect(migratedPackage.status, 'pending');
     expect(migratedPackage.externalReference, equals(null));
     expect(migratedPackage.deliveryRunId, 'RUN-SYN-MIGRATION');
+    expect(migratedPackage.tariffVersionSnapshot, equals(null));
+    expect(migratedPackage.deliveredAt, equals(null));
 
     await migratedDatabase.close();
   });
@@ -139,9 +141,10 @@ void main() {
     expect(migratedPackage.identificationStatus, 'unknown');
     expect(migratedPackage.identificationConfidence, equals(null));
     expect(migratedPackage.tariffId, equals(null));
+    expect(migratedPackage.tariffVersionSnapshot, equals(null));
     expect(migratedPackage.unitPriceMinorSnapshot, equals(null));
     expect(migratedPackage.currencySnapshot, equals(null));
-
+    expect(migratedPackage.deliveredAt, equals(null));
     expect(
       await migratedDatabase.select(migratedDatabase.operatorTariffs).get(),
       isEmpty,

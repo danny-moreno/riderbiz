@@ -525,6 +525,16 @@
             ]
           },
           {
+            "name": "tariff_version_snapshot",
+            "getter_name": "tariffVersionSnapshot",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
             "name": "unit_price_minor_snapshot",
             "getter_name": "unitPriceMinorSnapshot",
             "moor_type": "int",
@@ -550,6 +560,16 @@
                 }
               }
             ]
+          },
+          {
+            "name": "delivered_at",
+            "getter_name": "deliveredAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
           },
           {
             "name": "created_at",
@@ -726,7 +746,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"synthetic_packages\" (\"id\" TEXT NOT NULL, \"delivery_run_id\" TEXT NOT NULL REFERENCES delivery_runs (id) ON DELETE CASCADE, \"status\" TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'delivered', 'failed')), \"external_reference\" TEXT NULL, \"identified_operator_id\" TEXT NULL REFERENCES logistics_operators (id) ON DELETE RESTRICT, \"identification_status\" TEXT NOT NULL DEFAULT 'unknown' CHECK (identification_status IN ('identified', 'low_confidence', 'unknown', 'manual')), \"identification_confidence\" REAL NULL, \"tariff_id\" TEXT NULL REFERENCES operator_tariffs (id) ON DELETE RESTRICT, \"unit_price_minor_snapshot\" INTEGER NULL, \"currency_snapshot\" TEXT NULL, \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"needs_sync\" INTEGER NOT NULL DEFAULT 1 CHECK (\"needs_sync\" IN (0, 1)), PRIMARY KEY (\"id\"));"
+          "sql": "CREATE TABLE IF NOT EXISTS \"synthetic_packages\" (\"id\" TEXT NOT NULL, \"delivery_run_id\" TEXT NOT NULL REFERENCES delivery_runs (id) ON DELETE CASCADE, \"status\" TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'delivered', 'failed')), \"external_reference\" TEXT NULL, \"identified_operator_id\" TEXT NULL REFERENCES logistics_operators (id) ON DELETE RESTRICT, \"identification_status\" TEXT NOT NULL DEFAULT 'unknown' CHECK (identification_status IN ('identified', 'low_confidence', 'unknown', 'manual')), \"identification_confidence\" REAL NULL, \"tariff_id\" TEXT NULL REFERENCES operator_tariffs (id) ON DELETE RESTRICT, \"tariff_version_snapshot\" INTEGER NULL, \"unit_price_minor_snapshot\" INTEGER NULL, \"currency_snapshot\" TEXT NULL, \"delivered_at\" INTEGER NULL, \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"needs_sync\" INTEGER NOT NULL DEFAULT 1 CHECK (\"needs_sync\" IN (0, 1)), PRIMARY KEY (\"id\"));"
         }
       ]
     },

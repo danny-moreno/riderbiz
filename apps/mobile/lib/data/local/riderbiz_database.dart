@@ -117,11 +117,14 @@ class SyntheticPackages extends Table {
     onDelete: KeyAction.restrict,
   )();
 
+  IntColumn get tariffVersionSnapshot => integer().nullable()();
+
   IntColumn get unitPriceMinorSnapshot => integer().nullable()();
 
   TextColumn get currencySnapshot =>
       text().withLength(min: 3, max: 3).nullable()();
 
+  DateTimeColumn get deliveredAt => dateTime().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 
   DateTimeColumn get updatedAt => dateTime()();
@@ -197,11 +200,19 @@ class RiderBizDatabase extends _$RiderBizDatabase {
         await migrator.addColumn(syntheticPackages, syntheticPackages.tariffId);
         await migrator.addColumn(
           syntheticPackages,
+          syntheticPackages.tariffVersionSnapshot,
+        );
+        await migrator.addColumn(
+          syntheticPackages,
           syntheticPackages.unitPriceMinorSnapshot,
         );
         await migrator.addColumn(
           syntheticPackages,
           syntheticPackages.currencySnapshot,
+        );
+        await migrator.addColumn(
+          syntheticPackages,
+          syntheticPackages.deliveredAt,
         );
       }
     },
