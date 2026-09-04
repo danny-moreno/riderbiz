@@ -38,8 +38,23 @@ class $LogisticsOperatorsTable extends LogisticsOperators
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name, createdAt];
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, createdAt, isActive];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -73,6 +88,12 @@ class $LogisticsOperatorsTable extends LogisticsOperators
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
     return context;
   }
 
@@ -94,6 +115,10 @@ class $LogisticsOperatorsTable extends LogisticsOperators
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
     );
   }
 
@@ -108,10 +133,12 @@ class LogisticsOperator extends DataClass
   final String id;
   final String name;
   final DateTime createdAt;
+  final bool isActive;
   const LogisticsOperator({
     required this.id,
     required this.name,
     required this.createdAt,
+    required this.isActive,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -119,6 +146,7 @@ class LogisticsOperator extends DataClass
     map['id'] = Variable<String>(id);
     map['name'] = Variable<String>(name);
     map['created_at'] = Variable<DateTime>(createdAt);
+    map['is_active'] = Variable<bool>(isActive);
     return map;
   }
 
@@ -127,6 +155,7 @@ class LogisticsOperator extends DataClass
       id: Value(id),
       name: Value(name),
       createdAt: Value(createdAt),
+      isActive: Value(isActive),
     );
   }
 
@@ -139,6 +168,7 @@ class LogisticsOperator extends DataClass
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
     );
   }
   @override
@@ -148,20 +178,27 @@ class LogisticsOperator extends DataClass
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'isActive': serializer.toJson<bool>(isActive),
     };
   }
 
-  LogisticsOperator copyWith({String? id, String? name, DateTime? createdAt}) =>
-      LogisticsOperator(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        createdAt: createdAt ?? this.createdAt,
-      );
+  LogisticsOperator copyWith({
+    String? id,
+    String? name,
+    DateTime? createdAt,
+    bool? isActive,
+  }) => LogisticsOperator(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    createdAt: createdAt ?? this.createdAt,
+    isActive: isActive ?? this.isActive,
+  );
   LogisticsOperator copyWithCompanion(LogisticsOperatorsCompanion data) {
     return LogisticsOperator(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
     );
   }
 
@@ -170,37 +207,42 @@ class LogisticsOperator extends DataClass
     return (StringBuffer('LogisticsOperator(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('isActive: $isActive')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, createdAt);
+  int get hashCode => Object.hash(id, name, createdAt, isActive);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is LogisticsOperator &&
           other.id == this.id &&
           other.name == this.name &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.isActive == this.isActive);
 }
 
 class LogisticsOperatorsCompanion extends UpdateCompanion<LogisticsOperator> {
   final Value<String> id;
   final Value<String> name;
   final Value<DateTime> createdAt;
+  final Value<bool> isActive;
   final Value<int> rowid;
   const LogisticsOperatorsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LogisticsOperatorsCompanion.insert({
     required String id,
     required String name,
     required DateTime createdAt,
+    this.isActive = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -209,12 +251,14 @@ class LogisticsOperatorsCompanion extends UpdateCompanion<LogisticsOperator> {
     Expression<String>? id,
     Expression<String>? name,
     Expression<DateTime>? createdAt,
+    Expression<bool>? isActive,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (createdAt != null) 'created_at': createdAt,
+      if (isActive != null) 'is_active': isActive,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -223,12 +267,14 @@ class LogisticsOperatorsCompanion extends UpdateCompanion<LogisticsOperator> {
     Value<String>? id,
     Value<String>? name,
     Value<DateTime>? createdAt,
+    Value<bool>? isActive,
     Value<int>? rowid,
   }) {
     return LogisticsOperatorsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       createdAt: createdAt ?? this.createdAt,
+      isActive: isActive ?? this.isActive,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -245,6 +291,9 @@ class LogisticsOperatorsCompanion extends UpdateCompanion<LogisticsOperator> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -256,6 +305,1004 @@ class LogisticsOperatorsCompanion extends UpdateCompanion<LogisticsOperator> {
     return (StringBuffer('LogisticsOperatorsCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('isActive: $isActive, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $OperatorTariffsTable extends OperatorTariffs
+    with TableInfo<$OperatorTariffsTable, OperatorTariff> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OperatorTariffsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _operatorIdMeta = const VerificationMeta(
+    'operatorId',
+  );
+  @override
+  late final GeneratedColumn<String> operatorId = GeneratedColumn<String>(
+    'operator_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES logistics_operators (id) ON DELETE RESTRICT',
+    ),
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unitPriceMinorMeta = const VerificationMeta(
+    'unitPriceMinor',
+  );
+  @override
+  late final GeneratedColumn<int> unitPriceMinor = GeneratedColumn<int>(
+    'unit_price_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (unit_price_minor >= 0)',
+  );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 3,
+      maxTextLength: 3,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _validFromMeta = const VerificationMeta(
+    'validFrom',
+  );
+  @override
+  late final GeneratedColumn<DateTime> validFrom = GeneratedColumn<DateTime>(
+    'valid_from',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _validUntilMeta = const VerificationMeta(
+    'validUntil',
+  );
+  @override
+  late final GeneratedColumn<DateTime> validUntil = GeneratedColumn<DateTime>(
+    'valid_until',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    operatorId,
+    version,
+    unitPriceMinor,
+    currency,
+    validFrom,
+    validUntil,
+    isActive,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'operator_tariffs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<OperatorTariff> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('operator_id')) {
+      context.handle(
+        _operatorIdMeta,
+        operatorId.isAcceptableOrUnknown(data['operator_id']!, _operatorIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_operatorIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('unit_price_minor')) {
+      context.handle(
+        _unitPriceMinorMeta,
+        unitPriceMinor.isAcceptableOrUnknown(
+          data['unit_price_minor']!,
+          _unitPriceMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_unitPriceMinorMeta);
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_currencyMeta);
+    }
+    if (data.containsKey('valid_from')) {
+      context.handle(
+        _validFromMeta,
+        validFrom.isAcceptableOrUnknown(data['valid_from']!, _validFromMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_validFromMeta);
+    }
+    if (data.containsKey('valid_until')) {
+      context.handle(
+        _validUntilMeta,
+        validUntil.isAcceptableOrUnknown(data['valid_until']!, _validUntilMeta),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {operatorId, version},
+  ];
+  @override
+  OperatorTariff map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OperatorTariff(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      operatorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}operator_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      unitPriceMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}unit_price_minor'],
+      )!,
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
+      validFrom: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}valid_from'],
+      )!,
+      validUntil: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}valid_until'],
+      ),
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $OperatorTariffsTable createAlias(String alias) {
+    return $OperatorTariffsTable(attachedDatabase, alias);
+  }
+}
+
+class OperatorTariff extends DataClass implements Insertable<OperatorTariff> {
+  final String id;
+  final String operatorId;
+  final int version;
+  final int unitPriceMinor;
+  final String currency;
+  final DateTime validFrom;
+  final DateTime? validUntil;
+  final bool isActive;
+  final DateTime createdAt;
+  const OperatorTariff({
+    required this.id,
+    required this.operatorId,
+    required this.version,
+    required this.unitPriceMinor,
+    required this.currency,
+    required this.validFrom,
+    this.validUntil,
+    required this.isActive,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['operator_id'] = Variable<String>(operatorId);
+    map['version'] = Variable<int>(version);
+    map['unit_price_minor'] = Variable<int>(unitPriceMinor);
+    map['currency'] = Variable<String>(currency);
+    map['valid_from'] = Variable<DateTime>(validFrom);
+    if (!nullToAbsent || validUntil != null) {
+      map['valid_until'] = Variable<DateTime>(validUntil);
+    }
+    map['is_active'] = Variable<bool>(isActive);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  OperatorTariffsCompanion toCompanion(bool nullToAbsent) {
+    return OperatorTariffsCompanion(
+      id: Value(id),
+      operatorId: Value(operatorId),
+      version: Value(version),
+      unitPriceMinor: Value(unitPriceMinor),
+      currency: Value(currency),
+      validFrom: Value(validFrom),
+      validUntil: validUntil == null && nullToAbsent
+          ? const Value.absent()
+          : Value(validUntil),
+      isActive: Value(isActive),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory OperatorTariff.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return OperatorTariff(
+      id: serializer.fromJson<String>(json['id']),
+      operatorId: serializer.fromJson<String>(json['operatorId']),
+      version: serializer.fromJson<int>(json['version']),
+      unitPriceMinor: serializer.fromJson<int>(json['unitPriceMinor']),
+      currency: serializer.fromJson<String>(json['currency']),
+      validFrom: serializer.fromJson<DateTime>(json['validFrom']),
+      validUntil: serializer.fromJson<DateTime?>(json['validUntil']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'operatorId': serializer.toJson<String>(operatorId),
+      'version': serializer.toJson<int>(version),
+      'unitPriceMinor': serializer.toJson<int>(unitPriceMinor),
+      'currency': serializer.toJson<String>(currency),
+      'validFrom': serializer.toJson<DateTime>(validFrom),
+      'validUntil': serializer.toJson<DateTime?>(validUntil),
+      'isActive': serializer.toJson<bool>(isActive),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  OperatorTariff copyWith({
+    String? id,
+    String? operatorId,
+    int? version,
+    int? unitPriceMinor,
+    String? currency,
+    DateTime? validFrom,
+    Value<DateTime?> validUntil = const Value.absent(),
+    bool? isActive,
+    DateTime? createdAt,
+  }) => OperatorTariff(
+    id: id ?? this.id,
+    operatorId: operatorId ?? this.operatorId,
+    version: version ?? this.version,
+    unitPriceMinor: unitPriceMinor ?? this.unitPriceMinor,
+    currency: currency ?? this.currency,
+    validFrom: validFrom ?? this.validFrom,
+    validUntil: validUntil.present ? validUntil.value : this.validUntil,
+    isActive: isActive ?? this.isActive,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  OperatorTariff copyWithCompanion(OperatorTariffsCompanion data) {
+    return OperatorTariff(
+      id: data.id.present ? data.id.value : this.id,
+      operatorId: data.operatorId.present
+          ? data.operatorId.value
+          : this.operatorId,
+      version: data.version.present ? data.version.value : this.version,
+      unitPriceMinor: data.unitPriceMinor.present
+          ? data.unitPriceMinor.value
+          : this.unitPriceMinor,
+      currency: data.currency.present ? data.currency.value : this.currency,
+      validFrom: data.validFrom.present ? data.validFrom.value : this.validFrom,
+      validUntil: data.validUntil.present
+          ? data.validUntil.value
+          : this.validUntil,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OperatorTariff(')
+          ..write('id: $id, ')
+          ..write('operatorId: $operatorId, ')
+          ..write('version: $version, ')
+          ..write('unitPriceMinor: $unitPriceMinor, ')
+          ..write('currency: $currency, ')
+          ..write('validFrom: $validFrom, ')
+          ..write('validUntil: $validUntil, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    operatorId,
+    version,
+    unitPriceMinor,
+    currency,
+    validFrom,
+    validUntil,
+    isActive,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OperatorTariff &&
+          other.id == this.id &&
+          other.operatorId == this.operatorId &&
+          other.version == this.version &&
+          other.unitPriceMinor == this.unitPriceMinor &&
+          other.currency == this.currency &&
+          other.validFrom == this.validFrom &&
+          other.validUntil == this.validUntil &&
+          other.isActive == this.isActive &&
+          other.createdAt == this.createdAt);
+}
+
+class OperatorTariffsCompanion extends UpdateCompanion<OperatorTariff> {
+  final Value<String> id;
+  final Value<String> operatorId;
+  final Value<int> version;
+  final Value<int> unitPriceMinor;
+  final Value<String> currency;
+  final Value<DateTime> validFrom;
+  final Value<DateTime?> validUntil;
+  final Value<bool> isActive;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const OperatorTariffsCompanion({
+    this.id = const Value.absent(),
+    this.operatorId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.unitPriceMinor = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.validFrom = const Value.absent(),
+    this.validUntil = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  OperatorTariffsCompanion.insert({
+    required String id,
+    required String operatorId,
+    required int version,
+    required int unitPriceMinor,
+    required String currency,
+    required DateTime validFrom,
+    this.validUntil = const Value.absent(),
+    this.isActive = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       operatorId = Value(operatorId),
+       version = Value(version),
+       unitPriceMinor = Value(unitPriceMinor),
+       currency = Value(currency),
+       validFrom = Value(validFrom),
+       createdAt = Value(createdAt);
+  static Insertable<OperatorTariff> custom({
+    Expression<String>? id,
+    Expression<String>? operatorId,
+    Expression<int>? version,
+    Expression<int>? unitPriceMinor,
+    Expression<String>? currency,
+    Expression<DateTime>? validFrom,
+    Expression<DateTime>? validUntil,
+    Expression<bool>? isActive,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (operatorId != null) 'operator_id': operatorId,
+      if (version != null) 'version': version,
+      if (unitPriceMinor != null) 'unit_price_minor': unitPriceMinor,
+      if (currency != null) 'currency': currency,
+      if (validFrom != null) 'valid_from': validFrom,
+      if (validUntil != null) 'valid_until': validUntil,
+      if (isActive != null) 'is_active': isActive,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  OperatorTariffsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? operatorId,
+    Value<int>? version,
+    Value<int>? unitPriceMinor,
+    Value<String>? currency,
+    Value<DateTime>? validFrom,
+    Value<DateTime?>? validUntil,
+    Value<bool>? isActive,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return OperatorTariffsCompanion(
+      id: id ?? this.id,
+      operatorId: operatorId ?? this.operatorId,
+      version: version ?? this.version,
+      unitPriceMinor: unitPriceMinor ?? this.unitPriceMinor,
+      currency: currency ?? this.currency,
+      validFrom: validFrom ?? this.validFrom,
+      validUntil: validUntil ?? this.validUntil,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (operatorId.present) {
+      map['operator_id'] = Variable<String>(operatorId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (unitPriceMinor.present) {
+      map['unit_price_minor'] = Variable<int>(unitPriceMinor.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
+    if (validFrom.present) {
+      map['valid_from'] = Variable<DateTime>(validFrom.value);
+    }
+    if (validUntil.present) {
+      map['valid_until'] = Variable<DateTime>(validUntil.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OperatorTariffsCompanion(')
+          ..write('id: $id, ')
+          ..write('operatorId: $operatorId, ')
+          ..write('version: $version, ')
+          ..write('unitPriceMinor: $unitPriceMinor, ')
+          ..write('currency: $currency, ')
+          ..write('validFrom: $validFrom, ')
+          ..write('validUntil: $validUntil, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $OperatorLabelProfilesTable extends OperatorLabelProfiles
+    with TableInfo<$OperatorLabelProfilesTable, OperatorLabelProfile> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OperatorLabelProfilesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _operatorIdMeta = const VerificationMeta(
+    'operatorId',
+  );
+  @override
+  late final GeneratedColumn<String> operatorId = GeneratedColumn<String>(
+    'operator_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES logistics_operators (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _markerMeta = const VerificationMeta('marker');
+  @override
+  late final GeneratedColumn<String> marker = GeneratedColumn<String>(
+    'marker',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<int> priority = GeneratedColumn<int>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    operatorId,
+    marker,
+    priority,
+    isActive,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'operator_label_profiles';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<OperatorLabelProfile> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('operator_id')) {
+      context.handle(
+        _operatorIdMeta,
+        operatorId.isAcceptableOrUnknown(data['operator_id']!, _operatorIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_operatorIdMeta);
+    }
+    if (data.containsKey('marker')) {
+      context.handle(
+        _markerMeta,
+        marker.isAcceptableOrUnknown(data['marker']!, _markerMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_markerMeta);
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  OperatorLabelProfile map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OperatorLabelProfile(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      operatorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}operator_id'],
+      )!,
+      marker: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}marker'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $OperatorLabelProfilesTable createAlias(String alias) {
+    return $OperatorLabelProfilesTable(attachedDatabase, alias);
+  }
+}
+
+class OperatorLabelProfile extends DataClass
+    implements Insertable<OperatorLabelProfile> {
+  final String id;
+  final String operatorId;
+  final String marker;
+  final int priority;
+  final bool isActive;
+  final DateTime createdAt;
+  const OperatorLabelProfile({
+    required this.id,
+    required this.operatorId,
+    required this.marker,
+    required this.priority,
+    required this.isActive,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['operator_id'] = Variable<String>(operatorId);
+    map['marker'] = Variable<String>(marker);
+    map['priority'] = Variable<int>(priority);
+    map['is_active'] = Variable<bool>(isActive);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  OperatorLabelProfilesCompanion toCompanion(bool nullToAbsent) {
+    return OperatorLabelProfilesCompanion(
+      id: Value(id),
+      operatorId: Value(operatorId),
+      marker: Value(marker),
+      priority: Value(priority),
+      isActive: Value(isActive),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory OperatorLabelProfile.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return OperatorLabelProfile(
+      id: serializer.fromJson<String>(json['id']),
+      operatorId: serializer.fromJson<String>(json['operatorId']),
+      marker: serializer.fromJson<String>(json['marker']),
+      priority: serializer.fromJson<int>(json['priority']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'operatorId': serializer.toJson<String>(operatorId),
+      'marker': serializer.toJson<String>(marker),
+      'priority': serializer.toJson<int>(priority),
+      'isActive': serializer.toJson<bool>(isActive),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  OperatorLabelProfile copyWith({
+    String? id,
+    String? operatorId,
+    String? marker,
+    int? priority,
+    bool? isActive,
+    DateTime? createdAt,
+  }) => OperatorLabelProfile(
+    id: id ?? this.id,
+    operatorId: operatorId ?? this.operatorId,
+    marker: marker ?? this.marker,
+    priority: priority ?? this.priority,
+    isActive: isActive ?? this.isActive,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  OperatorLabelProfile copyWithCompanion(OperatorLabelProfilesCompanion data) {
+    return OperatorLabelProfile(
+      id: data.id.present ? data.id.value : this.id,
+      operatorId: data.operatorId.present
+          ? data.operatorId.value
+          : this.operatorId,
+      marker: data.marker.present ? data.marker.value : this.marker,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OperatorLabelProfile(')
+          ..write('id: $id, ')
+          ..write('operatorId: $operatorId, ')
+          ..write('marker: $marker, ')
+          ..write('priority: $priority, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, operatorId, marker, priority, isActive, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OperatorLabelProfile &&
+          other.id == this.id &&
+          other.operatorId == this.operatorId &&
+          other.marker == this.marker &&
+          other.priority == this.priority &&
+          other.isActive == this.isActive &&
+          other.createdAt == this.createdAt);
+}
+
+class OperatorLabelProfilesCompanion
+    extends UpdateCompanion<OperatorLabelProfile> {
+  final Value<String> id;
+  final Value<String> operatorId;
+  final Value<String> marker;
+  final Value<int> priority;
+  final Value<bool> isActive;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const OperatorLabelProfilesCompanion({
+    this.id = const Value.absent(),
+    this.operatorId = const Value.absent(),
+    this.marker = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  OperatorLabelProfilesCompanion.insert({
+    required String id,
+    required String operatorId,
+    required String marker,
+    this.priority = const Value.absent(),
+    this.isActive = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       operatorId = Value(operatorId),
+       marker = Value(marker),
+       createdAt = Value(createdAt);
+  static Insertable<OperatorLabelProfile> custom({
+    Expression<String>? id,
+    Expression<String>? operatorId,
+    Expression<String>? marker,
+    Expression<int>? priority,
+    Expression<bool>? isActive,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (operatorId != null) 'operator_id': operatorId,
+      if (marker != null) 'marker': marker,
+      if (priority != null) 'priority': priority,
+      if (isActive != null) 'is_active': isActive,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  OperatorLabelProfilesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? operatorId,
+    Value<String>? marker,
+    Value<int>? priority,
+    Value<bool>? isActive,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return OperatorLabelProfilesCompanion(
+      id: id ?? this.id,
+      operatorId: operatorId ?? this.operatorId,
+      marker: marker ?? this.marker,
+      priority: priority ?? this.priority,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (operatorId.present) {
+      map['operator_id'] = Variable<String>(operatorId.value);
+    }
+    if (marker.present) {
+      map['marker'] = Variable<String>(marker.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<int>(priority.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OperatorLabelProfilesCompanion(')
+          ..write('id: $id, ')
+          ..write('operatorId: $operatorId, ')
+          ..write('marker: $marker, ')
+          ..write('priority: $priority, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -633,6 +1680,83 @@ class $SyntheticPackagesTable extends SyntheticPackages
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _identifiedOperatorIdMeta =
+      const VerificationMeta('identifiedOperatorId');
+  @override
+  late final GeneratedColumn<String> identifiedOperatorId =
+      GeneratedColumn<String>(
+        'identified_operator_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES logistics_operators (id) ON DELETE RESTRICT',
+        ),
+      );
+  static const VerificationMeta _identificationStatusMeta =
+      const VerificationMeta('identificationStatus');
+  @override
+  late final GeneratedColumn<String> identificationStatus =
+      GeneratedColumn<String>(
+        'identification_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        $customConstraints: 'NOT NULL DEFAULT \'unknown\' CHECK (identification_status IN (\'identified\', \'low_confidence\', \'unknown\', \'manual\'))',
+        defaultValue: const CustomExpression('\'unknown\''),
+      );
+  static const VerificationMeta _identificationConfidenceMeta =
+      const VerificationMeta('identificationConfidence');
+  @override
+  late final GeneratedColumn<double> identificationConfidence =
+      GeneratedColumn<double>(
+        'identification_confidence',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _tariffIdMeta = const VerificationMeta(
+    'tariffId',
+  );
+  @override
+  late final GeneratedColumn<String> tariffId = GeneratedColumn<String>(
+    'tariff_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES operator_tariffs (id) ON DELETE RESTRICT',
+    ),
+  );
+  static const VerificationMeta _unitPriceMinorSnapshotMeta =
+      const VerificationMeta('unitPriceMinorSnapshot');
+  @override
+  late final GeneratedColumn<int> unitPriceMinorSnapshot = GeneratedColumn<int>(
+    'unit_price_minor_snapshot',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _currencySnapshotMeta = const VerificationMeta(
+    'currencySnapshot',
+  );
+  @override
+  late final GeneratedColumn<String> currencySnapshot = GeneratedColumn<String>(
+    'currency_snapshot',
+    aliasedName,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 3,
+      maxTextLength: 3,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -676,6 +1800,12 @@ class $SyntheticPackagesTable extends SyntheticPackages
     deliveryRunId,
     status,
     externalReference,
+    identifiedOperatorId,
+    identificationStatus,
+    identificationConfidence,
+    tariffId,
+    unitPriceMinorSnapshot,
+    currencySnapshot,
     createdAt,
     updatedAt,
     needsSync,
@@ -720,6 +1850,57 @@ class $SyntheticPackagesTable extends SyntheticPackages
         externalReference.isAcceptableOrUnknown(
           data['external_reference']!,
           _externalReferenceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('identified_operator_id')) {
+      context.handle(
+        _identifiedOperatorIdMeta,
+        identifiedOperatorId.isAcceptableOrUnknown(
+          data['identified_operator_id']!,
+          _identifiedOperatorIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('identification_status')) {
+      context.handle(
+        _identificationStatusMeta,
+        identificationStatus.isAcceptableOrUnknown(
+          data['identification_status']!,
+          _identificationStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('identification_confidence')) {
+      context.handle(
+        _identificationConfidenceMeta,
+        identificationConfidence.isAcceptableOrUnknown(
+          data['identification_confidence']!,
+          _identificationConfidenceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tariff_id')) {
+      context.handle(
+        _tariffIdMeta,
+        tariffId.isAcceptableOrUnknown(data['tariff_id']!, _tariffIdMeta),
+      );
+    }
+    if (data.containsKey('unit_price_minor_snapshot')) {
+      context.handle(
+        _unitPriceMinorSnapshotMeta,
+        unitPriceMinorSnapshot.isAcceptableOrUnknown(
+          data['unit_price_minor_snapshot']!,
+          _unitPriceMinorSnapshotMeta,
+        ),
+      );
+    }
+    if (data.containsKey('currency_snapshot')) {
+      context.handle(
+        _currencySnapshotMeta,
+        currencySnapshot.isAcceptableOrUnknown(
+          data['currency_snapshot']!,
+          _currencySnapshotMeta,
         ),
       );
     }
@@ -770,6 +1951,30 @@ class $SyntheticPackagesTable extends SyntheticPackages
         DriftSqlType.string,
         data['${effectivePrefix}external_reference'],
       ),
+      identifiedOperatorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}identified_operator_id'],
+      ),
+      identificationStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}identification_status'],
+      )!,
+      identificationConfidence: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}identification_confidence'],
+      ),
+      tariffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tariff_id'],
+      ),
+      unitPriceMinorSnapshot: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}unit_price_minor_snapshot'],
+      ),
+      currencySnapshot: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency_snapshot'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -797,6 +2002,12 @@ class SyntheticPackage extends DataClass
   final String deliveryRunId;
   final String status;
   final String? externalReference;
+  final String? identifiedOperatorId;
+  final String identificationStatus;
+  final double? identificationConfidence;
+  final String? tariffId;
+  final int? unitPriceMinorSnapshot;
+  final String? currencySnapshot;
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool needsSync;
@@ -805,6 +2016,12 @@ class SyntheticPackage extends DataClass
     required this.deliveryRunId,
     required this.status,
     this.externalReference,
+    this.identifiedOperatorId,
+    required this.identificationStatus,
+    this.identificationConfidence,
+    this.tariffId,
+    this.unitPriceMinorSnapshot,
+    this.currencySnapshot,
     required this.createdAt,
     required this.updatedAt,
     required this.needsSync,
@@ -817,6 +2034,24 @@ class SyntheticPackage extends DataClass
     map['status'] = Variable<String>(status);
     if (!nullToAbsent || externalReference != null) {
       map['external_reference'] = Variable<String>(externalReference);
+    }
+    if (!nullToAbsent || identifiedOperatorId != null) {
+      map['identified_operator_id'] = Variable<String>(identifiedOperatorId);
+    }
+    map['identification_status'] = Variable<String>(identificationStatus);
+    if (!nullToAbsent || identificationConfidence != null) {
+      map['identification_confidence'] = Variable<double>(
+        identificationConfidence,
+      );
+    }
+    if (!nullToAbsent || tariffId != null) {
+      map['tariff_id'] = Variable<String>(tariffId);
+    }
+    if (!nullToAbsent || unitPriceMinorSnapshot != null) {
+      map['unit_price_minor_snapshot'] = Variable<int>(unitPriceMinorSnapshot);
+    }
+    if (!nullToAbsent || currencySnapshot != null) {
+      map['currency_snapshot'] = Variable<String>(currencySnapshot);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -832,6 +2067,22 @@ class SyntheticPackage extends DataClass
       externalReference: externalReference == null && nullToAbsent
           ? const Value.absent()
           : Value(externalReference),
+      identifiedOperatorId: identifiedOperatorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(identifiedOperatorId),
+      identificationStatus: Value(identificationStatus),
+      identificationConfidence: identificationConfidence == null && nullToAbsent
+          ? const Value.absent()
+          : Value(identificationConfidence),
+      tariffId: tariffId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tariffId),
+      unitPriceMinorSnapshot: unitPriceMinorSnapshot == null && nullToAbsent
+          ? const Value.absent()
+          : Value(unitPriceMinorSnapshot),
+      currencySnapshot: currencySnapshot == null && nullToAbsent
+          ? const Value.absent()
+          : Value(currencySnapshot),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       needsSync: Value(needsSync),
@@ -850,6 +2101,20 @@ class SyntheticPackage extends DataClass
       externalReference: serializer.fromJson<String?>(
         json['externalReference'],
       ),
+      identifiedOperatorId: serializer.fromJson<String?>(
+        json['identifiedOperatorId'],
+      ),
+      identificationStatus: serializer.fromJson<String>(
+        json['identificationStatus'],
+      ),
+      identificationConfidence: serializer.fromJson<double?>(
+        json['identificationConfidence'],
+      ),
+      tariffId: serializer.fromJson<String?>(json['tariffId']),
+      unitPriceMinorSnapshot: serializer.fromJson<int?>(
+        json['unitPriceMinorSnapshot'],
+      ),
+      currencySnapshot: serializer.fromJson<String?>(json['currencySnapshot']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       needsSync: serializer.fromJson<bool>(json['needsSync']),
@@ -863,6 +2128,14 @@ class SyntheticPackage extends DataClass
       'deliveryRunId': serializer.toJson<String>(deliveryRunId),
       'status': serializer.toJson<String>(status),
       'externalReference': serializer.toJson<String?>(externalReference),
+      'identifiedOperatorId': serializer.toJson<String?>(identifiedOperatorId),
+      'identificationStatus': serializer.toJson<String>(identificationStatus),
+      'identificationConfidence': serializer.toJson<double?>(
+        identificationConfidence,
+      ),
+      'tariffId': serializer.toJson<String?>(tariffId),
+      'unitPriceMinorSnapshot': serializer.toJson<int?>(unitPriceMinorSnapshot),
+      'currencySnapshot': serializer.toJson<String?>(currencySnapshot),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'needsSync': serializer.toJson<bool>(needsSync),
@@ -874,6 +2147,12 @@ class SyntheticPackage extends DataClass
     String? deliveryRunId,
     String? status,
     Value<String?> externalReference = const Value.absent(),
+    Value<String?> identifiedOperatorId = const Value.absent(),
+    String? identificationStatus,
+    Value<double?> identificationConfidence = const Value.absent(),
+    Value<String?> tariffId = const Value.absent(),
+    Value<int?> unitPriceMinorSnapshot = const Value.absent(),
+    Value<String?> currencySnapshot = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? needsSync,
@@ -884,6 +2163,20 @@ class SyntheticPackage extends DataClass
     externalReference: externalReference.present
         ? externalReference.value
         : this.externalReference,
+    identifiedOperatorId: identifiedOperatorId.present
+        ? identifiedOperatorId.value
+        : this.identifiedOperatorId,
+    identificationStatus: identificationStatus ?? this.identificationStatus,
+    identificationConfidence: identificationConfidence.present
+        ? identificationConfidence.value
+        : this.identificationConfidence,
+    tariffId: tariffId.present ? tariffId.value : this.tariffId,
+    unitPriceMinorSnapshot: unitPriceMinorSnapshot.present
+        ? unitPriceMinorSnapshot.value
+        : this.unitPriceMinorSnapshot,
+    currencySnapshot: currencySnapshot.present
+        ? currencySnapshot.value
+        : this.currencySnapshot,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     needsSync: needsSync ?? this.needsSync,
@@ -898,6 +2191,22 @@ class SyntheticPackage extends DataClass
       externalReference: data.externalReference.present
           ? data.externalReference.value
           : this.externalReference,
+      identifiedOperatorId: data.identifiedOperatorId.present
+          ? data.identifiedOperatorId.value
+          : this.identifiedOperatorId,
+      identificationStatus: data.identificationStatus.present
+          ? data.identificationStatus.value
+          : this.identificationStatus,
+      identificationConfidence: data.identificationConfidence.present
+          ? data.identificationConfidence.value
+          : this.identificationConfidence,
+      tariffId: data.tariffId.present ? data.tariffId.value : this.tariffId,
+      unitPriceMinorSnapshot: data.unitPriceMinorSnapshot.present
+          ? data.unitPriceMinorSnapshot.value
+          : this.unitPriceMinorSnapshot,
+      currencySnapshot: data.currencySnapshot.present
+          ? data.currencySnapshot.value
+          : this.currencySnapshot,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       needsSync: data.needsSync.present ? data.needsSync.value : this.needsSync,
@@ -911,6 +2220,12 @@ class SyntheticPackage extends DataClass
           ..write('deliveryRunId: $deliveryRunId, ')
           ..write('status: $status, ')
           ..write('externalReference: $externalReference, ')
+          ..write('identifiedOperatorId: $identifiedOperatorId, ')
+          ..write('identificationStatus: $identificationStatus, ')
+          ..write('identificationConfidence: $identificationConfidence, ')
+          ..write('tariffId: $tariffId, ')
+          ..write('unitPriceMinorSnapshot: $unitPriceMinorSnapshot, ')
+          ..write('currencySnapshot: $currencySnapshot, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('needsSync: $needsSync')
@@ -924,6 +2239,12 @@ class SyntheticPackage extends DataClass
     deliveryRunId,
     status,
     externalReference,
+    identifiedOperatorId,
+    identificationStatus,
+    identificationConfidence,
+    tariffId,
+    unitPriceMinorSnapshot,
+    currencySnapshot,
     createdAt,
     updatedAt,
     needsSync,
@@ -936,6 +2257,12 @@ class SyntheticPackage extends DataClass
           other.deliveryRunId == this.deliveryRunId &&
           other.status == this.status &&
           other.externalReference == this.externalReference &&
+          other.identifiedOperatorId == this.identifiedOperatorId &&
+          other.identificationStatus == this.identificationStatus &&
+          other.identificationConfidence == this.identificationConfidence &&
+          other.tariffId == this.tariffId &&
+          other.unitPriceMinorSnapshot == this.unitPriceMinorSnapshot &&
+          other.currencySnapshot == this.currencySnapshot &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.needsSync == this.needsSync);
@@ -946,6 +2273,12 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
   final Value<String> deliveryRunId;
   final Value<String> status;
   final Value<String?> externalReference;
+  final Value<String?> identifiedOperatorId;
+  final Value<String> identificationStatus;
+  final Value<double?> identificationConfidence;
+  final Value<String?> tariffId;
+  final Value<int?> unitPriceMinorSnapshot;
+  final Value<String?> currencySnapshot;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> needsSync;
@@ -955,6 +2288,12 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     this.deliveryRunId = const Value.absent(),
     this.status = const Value.absent(),
     this.externalReference = const Value.absent(),
+    this.identifiedOperatorId = const Value.absent(),
+    this.identificationStatus = const Value.absent(),
+    this.identificationConfidence = const Value.absent(),
+    this.tariffId = const Value.absent(),
+    this.unitPriceMinorSnapshot = const Value.absent(),
+    this.currencySnapshot = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.needsSync = const Value.absent(),
@@ -965,6 +2304,12 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     required String deliveryRunId,
     this.status = const Value.absent(),
     this.externalReference = const Value.absent(),
+    this.identifiedOperatorId = const Value.absent(),
+    this.identificationStatus = const Value.absent(),
+    this.identificationConfidence = const Value.absent(),
+    this.tariffId = const Value.absent(),
+    this.unitPriceMinorSnapshot = const Value.absent(),
+    this.currencySnapshot = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.needsSync = const Value.absent(),
@@ -978,6 +2323,12 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     Expression<String>? deliveryRunId,
     Expression<String>? status,
     Expression<String>? externalReference,
+    Expression<String>? identifiedOperatorId,
+    Expression<String>? identificationStatus,
+    Expression<double>? identificationConfidence,
+    Expression<String>? tariffId,
+    Expression<int>? unitPriceMinorSnapshot,
+    Expression<String>? currencySnapshot,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<bool>? needsSync,
@@ -988,6 +2339,16 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
       if (deliveryRunId != null) 'delivery_run_id': deliveryRunId,
       if (status != null) 'status': status,
       if (externalReference != null) 'external_reference': externalReference,
+      if (identifiedOperatorId != null)
+        'identified_operator_id': identifiedOperatorId,
+      if (identificationStatus != null)
+        'identification_status': identificationStatus,
+      if (identificationConfidence != null)
+        'identification_confidence': identificationConfidence,
+      if (tariffId != null) 'tariff_id': tariffId,
+      if (unitPriceMinorSnapshot != null)
+        'unit_price_minor_snapshot': unitPriceMinorSnapshot,
+      if (currencySnapshot != null) 'currency_snapshot': currencySnapshot,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (needsSync != null) 'needs_sync': needsSync,
@@ -1000,6 +2361,12 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     Value<String>? deliveryRunId,
     Value<String>? status,
     Value<String?>? externalReference,
+    Value<String?>? identifiedOperatorId,
+    Value<String>? identificationStatus,
+    Value<double?>? identificationConfidence,
+    Value<String?>? tariffId,
+    Value<int?>? unitPriceMinorSnapshot,
+    Value<String?>? currencySnapshot,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<bool>? needsSync,
@@ -1010,6 +2377,14 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
       deliveryRunId: deliveryRunId ?? this.deliveryRunId,
       status: status ?? this.status,
       externalReference: externalReference ?? this.externalReference,
+      identifiedOperatorId: identifiedOperatorId ?? this.identifiedOperatorId,
+      identificationStatus: identificationStatus ?? this.identificationStatus,
+      identificationConfidence:
+          identificationConfidence ?? this.identificationConfidence,
+      tariffId: tariffId ?? this.tariffId,
+      unitPriceMinorSnapshot:
+          unitPriceMinorSnapshot ?? this.unitPriceMinorSnapshot,
+      currencySnapshot: currencySnapshot ?? this.currencySnapshot,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       needsSync: needsSync ?? this.needsSync,
@@ -1031,6 +2406,32 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
     }
     if (externalReference.present) {
       map['external_reference'] = Variable<String>(externalReference.value);
+    }
+    if (identifiedOperatorId.present) {
+      map['identified_operator_id'] = Variable<String>(
+        identifiedOperatorId.value,
+      );
+    }
+    if (identificationStatus.present) {
+      map['identification_status'] = Variable<String>(
+        identificationStatus.value,
+      );
+    }
+    if (identificationConfidence.present) {
+      map['identification_confidence'] = Variable<double>(
+        identificationConfidence.value,
+      );
+    }
+    if (tariffId.present) {
+      map['tariff_id'] = Variable<String>(tariffId.value);
+    }
+    if (unitPriceMinorSnapshot.present) {
+      map['unit_price_minor_snapshot'] = Variable<int>(
+        unitPriceMinorSnapshot.value,
+      );
+    }
+    if (currencySnapshot.present) {
+      map['currency_snapshot'] = Variable<String>(currencySnapshot.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -1054,6 +2455,12 @@ class SyntheticPackagesCompanion extends UpdateCompanion<SyntheticPackage> {
           ..write('deliveryRunId: $deliveryRunId, ')
           ..write('status: $status, ')
           ..write('externalReference: $externalReference, ')
+          ..write('identifiedOperatorId: $identifiedOperatorId, ')
+          ..write('identificationStatus: $identificationStatus, ')
+          ..write('identificationConfidence: $identificationConfidence, ')
+          ..write('tariffId: $tariffId, ')
+          ..write('unitPriceMinorSnapshot: $unitPriceMinorSnapshot, ')
+          ..write('currencySnapshot: $currencySnapshot, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('needsSync: $needsSync, ')
@@ -1437,6 +2844,11 @@ abstract class _$RiderBizDatabase extends GeneratedDatabase {
   $RiderBizDatabaseManager get managers => $RiderBizDatabaseManager(this);
   late final $LogisticsOperatorsTable logisticsOperators =
       $LogisticsOperatorsTable(this);
+  late final $OperatorTariffsTable operatorTariffs = $OperatorTariffsTable(
+    this,
+  );
+  late final $OperatorLabelProfilesTable operatorLabelProfiles =
+      $OperatorLabelProfilesTable(this);
   late final $DeliveryRunsTable deliveryRuns = $DeliveryRunsTable(this);
   late final $SyntheticPackagesTable syntheticPackages =
       $SyntheticPackagesTable(this);
@@ -1447,12 +2859,21 @@ abstract class _$RiderBizDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     logisticsOperators,
+    operatorTariffs,
+    operatorLabelProfiles,
     deliveryRuns,
     syntheticPackages,
     deliveryEvents,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'logistics_operators',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('operator_label_profiles', kind: UpdateKind.delete)],
+    ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'delivery_runs',
@@ -1475,6 +2896,7 @@ typedef $$LogisticsOperatorsTableCreateCompanionBuilder =
       required String id,
       required String name,
       required DateTime createdAt,
+      Value<bool> isActive,
       Value<int> rowid,
     });
 typedef $$LogisticsOperatorsTableUpdateCompanionBuilder =
@@ -1482,6 +2904,7 @@ typedef $$LogisticsOperatorsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> name,
       Value<DateTime> createdAt,
+      Value<bool> isActive,
       Value<int> rowid,
     });
 
@@ -1498,6 +2921,53 @@ final class $$LogisticsOperatorsTableReferences
     super.$_typedResult,
   );
 
+  static MultiTypedResultKey<$OperatorTariffsTable, List<OperatorTariff>>
+  _operatorTariffsRefsTable(_$RiderBizDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.operatorTariffs,
+        aliasName: 'logistics_operators__id__operator_tariffs__operator_id',
+      );
+
+  $$OperatorTariffsTableProcessedTableManager get operatorTariffsRefs {
+    final manager = $$OperatorTariffsTableTableManager(
+      $_db,
+      $_db.operatorTariffs,
+    ).filter((f) => f.operatorId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _operatorTariffsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $OperatorLabelProfilesTable,
+    List<OperatorLabelProfile>
+  >
+  _operatorLabelProfilesRefsTable(_$RiderBizDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.operatorLabelProfiles,
+        aliasName:
+            'logistics_operators__id__operator_label_profiles__operator_id',
+      );
+
+  $$OperatorLabelProfilesTableProcessedTableManager
+  get operatorLabelProfilesRefs {
+    final manager = $$OperatorLabelProfilesTableTableManager(
+      $_db,
+      $_db.operatorLabelProfiles,
+    ).filter((f) => f.operatorId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _operatorLabelProfilesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$DeliveryRunsTable, List<DeliveryRun>>
   _deliveryRunsRefsTable(_$RiderBizDatabase db) =>
       MultiTypedResultKey.fromTable(
@@ -1512,6 +2982,33 @@ final class $$LogisticsOperatorsTableReferences
     ).filter((f) => f.operatorId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_deliveryRunsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$SyntheticPackagesTable, List<SyntheticPackage>>
+  _syntheticPackagesRefsTable(
+    _$RiderBizDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.syntheticPackages,
+    aliasName:
+        'logistics_operators__id__synthetic_packages__identified_operator_id',
+  );
+
+  $$SyntheticPackagesTableProcessedTableManager get syntheticPackagesRefs {
+    final manager =
+        $$SyntheticPackagesTableTableManager(
+          $_db,
+          $_db.syntheticPackages,
+        ).filter(
+          (f) =>
+              f.identifiedOperatorId.id.sqlEquals($_itemColumn<String>('id')!),
+        );
+
+    final cache = $_typedResult.readTableOrNull(
+      _syntheticPackagesRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -1542,6 +3039,62 @@ class $$LogisticsOperatorsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> operatorTariffsRefs(
+    Expression<bool> Function($$OperatorTariffsTableFilterComposer f) f,
+  ) {
+    final $$OperatorTariffsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.operatorTariffs,
+      getReferencedColumn: (t) => t.operatorId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OperatorTariffsTableFilterComposer(
+            $db: $db,
+            $table: $db.operatorTariffs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> operatorLabelProfilesRefs(
+    Expression<bool> Function($$OperatorLabelProfilesTableFilterComposer f) f,
+  ) {
+    final $$OperatorLabelProfilesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.operatorLabelProfiles,
+          getReferencedColumn: (t) => t.operatorId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$OperatorLabelProfilesTableFilterComposer(
+                $db: $db,
+                $table: $db.operatorLabelProfiles,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<bool> deliveryRunsRefs(
     Expression<bool> Function($$DeliveryRunsTableFilterComposer f) f,
   ) {
@@ -1558,6 +3111,31 @@ class $$LogisticsOperatorsTableFilterComposer
           }) => $$DeliveryRunsTableFilterComposer(
             $db: $db,
             $table: $db.deliveryRuns,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> syntheticPackagesRefs(
+    Expression<bool> Function($$SyntheticPackagesTableFilterComposer f) f,
+  ) {
+    final $$SyntheticPackagesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.syntheticPackages,
+      getReferencedColumn: (t) => t.identifiedOperatorId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SyntheticPackagesTableFilterComposer(
+            $db: $db,
+            $table: $db.syntheticPackages,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -1591,6 +3169,11 @@ class $$LogisticsOperatorsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LogisticsOperatorsTableAnnotationComposer
@@ -1610,6 +3193,60 @@ class $$LogisticsOperatorsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  Expression<T> operatorTariffsRefs<T extends Object>(
+    Expression<T> Function($$OperatorTariffsTableAnnotationComposer a) f,
+  ) {
+    final $$OperatorTariffsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.operatorTariffs,
+      getReferencedColumn: (t) => t.operatorId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OperatorTariffsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.operatorTariffs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> operatorLabelProfilesRefs<T extends Object>(
+    Expression<T> Function($$OperatorLabelProfilesTableAnnotationComposer a) f,
+  ) {
+    final $$OperatorLabelProfilesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.operatorLabelProfiles,
+          getReferencedColumn: (t) => t.operatorId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$OperatorLabelProfilesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.operatorLabelProfiles,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 
   Expression<T> deliveryRunsRefs<T extends Object>(
     Expression<T> Function($$DeliveryRunsTableAnnotationComposer a) f,
@@ -1635,6 +3272,32 @@ class $$LogisticsOperatorsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> syntheticPackagesRefs<T extends Object>(
+    Expression<T> Function($$SyntheticPackagesTableAnnotationComposer a) f,
+  ) {
+    final $$SyntheticPackagesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.syntheticPackages,
+          getReferencedColumn: (t) => t.identifiedOperatorId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SyntheticPackagesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.syntheticPackages,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$LogisticsOperatorsTableTableManager
@@ -1650,7 +3313,12 @@ class $$LogisticsOperatorsTableTableManager
           $$LogisticsOperatorsTableUpdateCompanionBuilder,
           (LogisticsOperator, $$LogisticsOperatorsTableReferences),
           LogisticsOperator,
-          PrefetchHooks Function({bool deliveryRunsRefs})
+          PrefetchHooks Function({
+            bool operatorTariffsRefs,
+            bool operatorLabelProfilesRefs,
+            bool deliveryRunsRefs,
+            bool syntheticPackagesRefs,
+          })
         > {
   $$LogisticsOperatorsTableTableManager(
     _$RiderBizDatabase db,
@@ -1673,11 +3341,13 @@ class $$LogisticsOperatorsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LogisticsOperatorsCompanion(
                 id: id,
                 name: name,
                 createdAt: createdAt,
+                isActive: isActive,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1685,11 +3355,13 @@ class $$LogisticsOperatorsTableTableManager
                 required String id,
                 required String name,
                 required DateTime createdAt,
+                Value<bool> isActive = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LogisticsOperatorsCompanion.insert(
                 id: id,
                 name: name,
                 createdAt: createdAt,
+                isActive: isActive,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -1700,36 +3372,112 @@ class $$LogisticsOperatorsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({deliveryRunsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (deliveryRunsRefs) db.deliveryRuns],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (deliveryRunsRefs)
-                    await $_getPrefetchedData<
-                      LogisticsOperator,
-                      $LogisticsOperatorsTable,
-                      DeliveryRun
-                    >(
-                      currentTable: table,
-                      referencedTable: $$LogisticsOperatorsTableReferences
-                          ._deliveryRunsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$LogisticsOperatorsTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).deliveryRunsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.operatorId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({
+                operatorTariffsRefs = false,
+                operatorLabelProfilesRefs = false,
+                deliveryRunsRefs = false,
+                syntheticPackagesRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (operatorTariffsRefs) db.operatorTariffs,
+                    if (operatorLabelProfilesRefs) db.operatorLabelProfiles,
+                    if (deliveryRunsRefs) db.deliveryRuns,
+                    if (syntheticPackagesRefs) db.syntheticPackages,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (operatorTariffsRefs)
+                        await $_getPrefetchedData<
+                          LogisticsOperator,
+                          $LogisticsOperatorsTable,
+                          OperatorTariff
+                        >(
+                          currentTable: table,
+                          referencedTable: $$LogisticsOperatorsTableReferences
+                              ._operatorTariffsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$LogisticsOperatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).operatorTariffsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.operatorId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (operatorLabelProfilesRefs)
+                        await $_getPrefetchedData<
+                          LogisticsOperator,
+                          $LogisticsOperatorsTable,
+                          OperatorLabelProfile
+                        >(
+                          currentTable: table,
+                          referencedTable: $$LogisticsOperatorsTableReferences
+                              ._operatorLabelProfilesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$LogisticsOperatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).operatorLabelProfilesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.operatorId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (deliveryRunsRefs)
+                        await $_getPrefetchedData<
+                          LogisticsOperator,
+                          $LogisticsOperatorsTable,
+                          DeliveryRun
+                        >(
+                          currentTable: table,
+                          referencedTable: $$LogisticsOperatorsTableReferences
+                              ._deliveryRunsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$LogisticsOperatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).deliveryRunsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.operatorId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (syntheticPackagesRefs)
+                        await $_getPrefetchedData<
+                          LogisticsOperator,
+                          $LogisticsOperatorsTable,
+                          SyntheticPackage
+                        >(
+                          currentTable: table,
+                          referencedTable: $$LogisticsOperatorsTableReferences
+                              ._syntheticPackagesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$LogisticsOperatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).syntheticPackagesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.identifiedOperatorId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -1746,7 +3494,874 @@ typedef $$LogisticsOperatorsTableProcessedTableManager =
       $$LogisticsOperatorsTableUpdateCompanionBuilder,
       (LogisticsOperator, $$LogisticsOperatorsTableReferences),
       LogisticsOperator,
-      PrefetchHooks Function({bool deliveryRunsRefs})
+      PrefetchHooks Function({
+        bool operatorTariffsRefs,
+        bool operatorLabelProfilesRefs,
+        bool deliveryRunsRefs,
+        bool syntheticPackagesRefs,
+      })
+    >;
+typedef $$OperatorTariffsTableCreateCompanionBuilder =
+    OperatorTariffsCompanion Function({
+      required String id,
+      required String operatorId,
+      required int version,
+      required int unitPriceMinor,
+      required String currency,
+      required DateTime validFrom,
+      Value<DateTime?> validUntil,
+      Value<bool> isActive,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$OperatorTariffsTableUpdateCompanionBuilder =
+    OperatorTariffsCompanion Function({
+      Value<String> id,
+      Value<String> operatorId,
+      Value<int> version,
+      Value<int> unitPriceMinor,
+      Value<String> currency,
+      Value<DateTime> validFrom,
+      Value<DateTime?> validUntil,
+      Value<bool> isActive,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$OperatorTariffsTableReferences
+    extends
+        BaseReferences<
+          _$RiderBizDatabase,
+          $OperatorTariffsTable,
+          OperatorTariff
+        > {
+  $$OperatorTariffsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $LogisticsOperatorsTable _operatorIdTable(_$RiderBizDatabase db) => db
+      .logisticsOperators
+      .createAlias('operator_tariffs__operator_id__logistics_operators__id');
+
+  $$LogisticsOperatorsTableProcessedTableManager get operatorId {
+    final $_column = $_itemColumn<String>('operator_id')!;
+
+    final manager = $$LogisticsOperatorsTableTableManager(
+      $_db,
+      $_db.logisticsOperators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_operatorIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$SyntheticPackagesTable, List<SyntheticPackage>>
+  _syntheticPackagesRefsTable(_$RiderBizDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.syntheticPackages,
+        aliasName: 'operator_tariffs__id__synthetic_packages__tariff_id',
+      );
+
+  $$SyntheticPackagesTableProcessedTableManager get syntheticPackagesRefs {
+    final manager = $$SyntheticPackagesTableTableManager(
+      $_db,
+      $_db.syntheticPackages,
+    ).filter((f) => f.tariffId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _syntheticPackagesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$OperatorTariffsTableFilterComposer
+    extends Composer<_$RiderBizDatabase, $OperatorTariffsTable> {
+  $$OperatorTariffsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unitPriceMinor => $composableBuilder(
+    column: $table.unitPriceMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get validFrom => $composableBuilder(
+    column: $table.validFrom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get validUntil => $composableBuilder(
+    column: $table.validUntil,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$LogisticsOperatorsTableFilterComposer get operatorId {
+    final $$LogisticsOperatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.operatorId,
+      referencedTable: $db.logisticsOperators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LogisticsOperatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.logisticsOperators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> syntheticPackagesRefs(
+    Expression<bool> Function($$SyntheticPackagesTableFilterComposer f) f,
+  ) {
+    final $$SyntheticPackagesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.syntheticPackages,
+      getReferencedColumn: (t) => t.tariffId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SyntheticPackagesTableFilterComposer(
+            $db: $db,
+            $table: $db.syntheticPackages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$OperatorTariffsTableOrderingComposer
+    extends Composer<_$RiderBizDatabase, $OperatorTariffsTable> {
+  $$OperatorTariffsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get unitPriceMinor => $composableBuilder(
+    column: $table.unitPriceMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get validFrom => $composableBuilder(
+    column: $table.validFrom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get validUntil => $composableBuilder(
+    column: $table.validUntil,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$LogisticsOperatorsTableOrderingComposer get operatorId {
+    final $$LogisticsOperatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.operatorId,
+      referencedTable: $db.logisticsOperators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LogisticsOperatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.logisticsOperators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$OperatorTariffsTableAnnotationComposer
+    extends Composer<_$RiderBizDatabase, $OperatorTariffsTable> {
+  $$OperatorTariffsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<int> get unitPriceMinor => $composableBuilder(
+    column: $table.unitPriceMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get validFrom =>
+      $composableBuilder(column: $table.validFrom, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get validUntil => $composableBuilder(
+    column: $table.validUntil,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$LogisticsOperatorsTableAnnotationComposer get operatorId {
+    final $$LogisticsOperatorsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.operatorId,
+          referencedTable: $db.logisticsOperators,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LogisticsOperatorsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.logisticsOperators,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  Expression<T> syntheticPackagesRefs<T extends Object>(
+    Expression<T> Function($$SyntheticPackagesTableAnnotationComposer a) f,
+  ) {
+    final $$SyntheticPackagesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.syntheticPackages,
+          getReferencedColumn: (t) => t.tariffId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SyntheticPackagesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.syntheticPackages,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$OperatorTariffsTableTableManager
+    extends
+        RootTableManager<
+          _$RiderBizDatabase,
+          $OperatorTariffsTable,
+          OperatorTariff,
+          $$OperatorTariffsTableFilterComposer,
+          $$OperatorTariffsTableOrderingComposer,
+          $$OperatorTariffsTableAnnotationComposer,
+          $$OperatorTariffsTableCreateCompanionBuilder,
+          $$OperatorTariffsTableUpdateCompanionBuilder,
+          (OperatorTariff, $$OperatorTariffsTableReferences),
+          OperatorTariff,
+          PrefetchHooks Function({bool operatorId, bool syntheticPackagesRefs})
+        > {
+  $$OperatorTariffsTableTableManager(
+    _$RiderBizDatabase db,
+    $OperatorTariffsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$OperatorTariffsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$OperatorTariffsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$OperatorTariffsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> operatorId = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<int> unitPriceMinor = const Value.absent(),
+                Value<String> currency = const Value.absent(),
+                Value<DateTime> validFrom = const Value.absent(),
+                Value<DateTime?> validUntil = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OperatorTariffsCompanion(
+                id: id,
+                operatorId: operatorId,
+                version: version,
+                unitPriceMinor: unitPriceMinor,
+                currency: currency,
+                validFrom: validFrom,
+                validUntil: validUntil,
+                isActive: isActive,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String operatorId,
+                required int version,
+                required int unitPriceMinor,
+                required String currency,
+                required DateTime validFrom,
+                Value<DateTime?> validUntil = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => OperatorTariffsCompanion.insert(
+                id: id,
+                operatorId: operatorId,
+                version: version,
+                unitPriceMinor: unitPriceMinor,
+                currency: currency,
+                validFrom: validFrom,
+                validUntil: validUntil,
+                isActive: isActive,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$OperatorTariffsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({operatorId = false, syntheticPackagesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (syntheticPackagesRefs) db.syntheticPackages,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (operatorId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.operatorId,
+                            referencedTable: $$OperatorTariffsTableReferences
+                                ._operatorIdTable(db),
+                            referencedColumn: $$OperatorTariffsTableReferences
+                                ._operatorIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (syntheticPackagesRefs)
+                        await $_getPrefetchedData<
+                          OperatorTariff,
+                          $OperatorTariffsTable,
+                          SyntheticPackage
+                        >(
+                          currentTable: table,
+                          referencedTable: $$OperatorTariffsTableReferences
+                              ._syntheticPackagesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$OperatorTariffsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).syntheticPackagesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.tariffId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$OperatorTariffsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$RiderBizDatabase,
+      $OperatorTariffsTable,
+      OperatorTariff,
+      $$OperatorTariffsTableFilterComposer,
+      $$OperatorTariffsTableOrderingComposer,
+      $$OperatorTariffsTableAnnotationComposer,
+      $$OperatorTariffsTableCreateCompanionBuilder,
+      $$OperatorTariffsTableUpdateCompanionBuilder,
+      (OperatorTariff, $$OperatorTariffsTableReferences),
+      OperatorTariff,
+      PrefetchHooks Function({bool operatorId, bool syntheticPackagesRefs})
+    >;
+typedef $$OperatorLabelProfilesTableCreateCompanionBuilder =
+    OperatorLabelProfilesCompanion Function({
+      required String id,
+      required String operatorId,
+      required String marker,
+      Value<int> priority,
+      Value<bool> isActive,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$OperatorLabelProfilesTableUpdateCompanionBuilder =
+    OperatorLabelProfilesCompanion Function({
+      Value<String> id,
+      Value<String> operatorId,
+      Value<String> marker,
+      Value<int> priority,
+      Value<bool> isActive,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$OperatorLabelProfilesTableReferences
+    extends
+        BaseReferences<
+          _$RiderBizDatabase,
+          $OperatorLabelProfilesTable,
+          OperatorLabelProfile
+        > {
+  $$OperatorLabelProfilesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $LogisticsOperatorsTable _operatorIdTable(_$RiderBizDatabase db) =>
+      db.logisticsOperators.createAlias(
+        'operator_label_profiles__operator_id__logistics_operators__id',
+      );
+
+  $$LogisticsOperatorsTableProcessedTableManager get operatorId {
+    final $_column = $_itemColumn<String>('operator_id')!;
+
+    final manager = $$LogisticsOperatorsTableTableManager(
+      $_db,
+      $_db.logisticsOperators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_operatorIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$OperatorLabelProfilesTableFilterComposer
+    extends Composer<_$RiderBizDatabase, $OperatorLabelProfilesTable> {
+  $$OperatorLabelProfilesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get marker => $composableBuilder(
+    column: $table.marker,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$LogisticsOperatorsTableFilterComposer get operatorId {
+    final $$LogisticsOperatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.operatorId,
+      referencedTable: $db.logisticsOperators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LogisticsOperatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.logisticsOperators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$OperatorLabelProfilesTableOrderingComposer
+    extends Composer<_$RiderBizDatabase, $OperatorLabelProfilesTable> {
+  $$OperatorLabelProfilesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get marker => $composableBuilder(
+    column: $table.marker,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$LogisticsOperatorsTableOrderingComposer get operatorId {
+    final $$LogisticsOperatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.operatorId,
+      referencedTable: $db.logisticsOperators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LogisticsOperatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.logisticsOperators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$OperatorLabelProfilesTableAnnotationComposer
+    extends Composer<_$RiderBizDatabase, $OperatorLabelProfilesTable> {
+  $$OperatorLabelProfilesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get marker =>
+      $composableBuilder(column: $table.marker, builder: (column) => column);
+
+  GeneratedColumn<int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$LogisticsOperatorsTableAnnotationComposer get operatorId {
+    final $$LogisticsOperatorsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.operatorId,
+          referencedTable: $db.logisticsOperators,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LogisticsOperatorsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.logisticsOperators,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$OperatorLabelProfilesTableTableManager
+    extends
+        RootTableManager<
+          _$RiderBizDatabase,
+          $OperatorLabelProfilesTable,
+          OperatorLabelProfile,
+          $$OperatorLabelProfilesTableFilterComposer,
+          $$OperatorLabelProfilesTableOrderingComposer,
+          $$OperatorLabelProfilesTableAnnotationComposer,
+          $$OperatorLabelProfilesTableCreateCompanionBuilder,
+          $$OperatorLabelProfilesTableUpdateCompanionBuilder,
+          (OperatorLabelProfile, $$OperatorLabelProfilesTableReferences),
+          OperatorLabelProfile,
+          PrefetchHooks Function({bool operatorId})
+        > {
+  $$OperatorLabelProfilesTableTableManager(
+    _$RiderBizDatabase db,
+    $OperatorLabelProfilesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$OperatorLabelProfilesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$OperatorLabelProfilesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$OperatorLabelProfilesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> operatorId = const Value.absent(),
+                Value<String> marker = const Value.absent(),
+                Value<int> priority = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OperatorLabelProfilesCompanion(
+                id: id,
+                operatorId: operatorId,
+                marker: marker,
+                priority: priority,
+                isActive: isActive,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String operatorId,
+                required String marker,
+                Value<int> priority = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => OperatorLabelProfilesCompanion.insert(
+                id: id,
+                operatorId: operatorId,
+                marker: marker,
+                priority: priority,
+                isActive: isActive,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$OperatorLabelProfilesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({operatorId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (operatorId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.operatorId,
+                        referencedTable: $$OperatorLabelProfilesTableReferences
+                            ._operatorIdTable(db),
+                        referencedColumn: $$OperatorLabelProfilesTableReferences
+                            ._operatorIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$OperatorLabelProfilesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$RiderBizDatabase,
+      $OperatorLabelProfilesTable,
+      OperatorLabelProfile,
+      $$OperatorLabelProfilesTableFilterComposer,
+      $$OperatorLabelProfilesTableOrderingComposer,
+      $$OperatorLabelProfilesTableAnnotationComposer,
+      $$OperatorLabelProfilesTableCreateCompanionBuilder,
+      $$OperatorLabelProfilesTableUpdateCompanionBuilder,
+      (OperatorLabelProfile, $$OperatorLabelProfilesTableReferences),
+      OperatorLabelProfile,
+      PrefetchHooks Function({bool operatorId})
     >;
 typedef $$DeliveryRunsTableCreateCompanionBuilder =
     DeliveryRunsCompanion Function({
@@ -2154,6 +4769,12 @@ typedef $$SyntheticPackagesTableCreateCompanionBuilder =
       required String deliveryRunId,
       Value<String> status,
       Value<String?> externalReference,
+      Value<String?> identifiedOperatorId,
+      Value<String> identificationStatus,
+      Value<double?> identificationConfidence,
+      Value<String?> tariffId,
+      Value<int?> unitPriceMinorSnapshot,
+      Value<String?> currencySnapshot,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<bool> needsSync,
@@ -2165,6 +4786,12 @@ typedef $$SyntheticPackagesTableUpdateCompanionBuilder =
       Value<String> deliveryRunId,
       Value<String> status,
       Value<String?> externalReference,
+      Value<String?> identifiedOperatorId,
+      Value<String> identificationStatus,
+      Value<double?> identificationConfidence,
+      Value<String?> tariffId,
+      Value<int?> unitPriceMinorSnapshot,
+      Value<String?> currencySnapshot,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> needsSync,
@@ -2196,6 +4823,46 @@ final class $$SyntheticPackagesTableReferences
       $_db.deliveryRuns,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_deliveryRunIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $LogisticsOperatorsTable _identifiedOperatorIdTable(
+    _$RiderBizDatabase db,
+  ) => db.logisticsOperators.createAlias(
+    'synthetic_packages__identified_operator_id__logistics_operators__id',
+  );
+
+  $$LogisticsOperatorsTableProcessedTableManager? get identifiedOperatorId {
+    final $_column = $_itemColumn<String>('identified_operator_id');
+    if ($_column == null) return null;
+    final manager = $$LogisticsOperatorsTableTableManager(
+      $_db,
+      $_db.logisticsOperators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(
+      _identifiedOperatorIdTable($_db),
+    );
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $OperatorTariffsTable _tariffIdTable(_$RiderBizDatabase db) => db
+      .operatorTariffs
+      .createAlias('synthetic_packages__tariff_id__operator_tariffs__id');
+
+  $$OperatorTariffsTableProcessedTableManager? get tariffId {
+    final $_column = $_itemColumn<String>('tariff_id');
+    if ($_column == null) return null;
+    final manager = $$OperatorTariffsTableTableManager(
+      $_db,
+      $_db.operatorTariffs,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_tariffIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -2246,6 +4913,26 @@ class $$SyntheticPackagesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get identificationStatus => $composableBuilder(
+    column: $table.identificationStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get identificationConfidence => $composableBuilder(
+    column: $table.identificationConfidence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unitPriceMinorSnapshot => $composableBuilder(
+    column: $table.unitPriceMinorSnapshot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currencySnapshot => $composableBuilder(
+    column: $table.currencySnapshot,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -2275,6 +4962,52 @@ class $$SyntheticPackagesTableFilterComposer
           }) => $$DeliveryRunsTableFilterComposer(
             $db: $db,
             $table: $db.deliveryRuns,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$LogisticsOperatorsTableFilterComposer get identifiedOperatorId {
+    final $$LogisticsOperatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.identifiedOperatorId,
+      referencedTable: $db.logisticsOperators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LogisticsOperatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.logisticsOperators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$OperatorTariffsTableFilterComposer get tariffId {
+    final $$OperatorTariffsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tariffId,
+      referencedTable: $db.operatorTariffs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OperatorTariffsTableFilterComposer(
+            $db: $db,
+            $table: $db.operatorTariffs,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2334,6 +5067,26 @@ class $$SyntheticPackagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get identificationStatus => $composableBuilder(
+    column: $table.identificationStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get identificationConfidence => $composableBuilder(
+    column: $table.identificationConfidence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get unitPriceMinorSnapshot => $composableBuilder(
+    column: $table.unitPriceMinorSnapshot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currencySnapshot => $composableBuilder(
+    column: $table.currencySnapshot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -2371,6 +5124,52 @@ class $$SyntheticPackagesTableOrderingComposer
     );
     return composer;
   }
+
+  $$LogisticsOperatorsTableOrderingComposer get identifiedOperatorId {
+    final $$LogisticsOperatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.identifiedOperatorId,
+      referencedTable: $db.logisticsOperators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LogisticsOperatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.logisticsOperators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$OperatorTariffsTableOrderingComposer get tariffId {
+    final $$OperatorTariffsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tariffId,
+      referencedTable: $db.operatorTariffs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OperatorTariffsTableOrderingComposer(
+            $db: $db,
+            $table: $db.operatorTariffs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$SyntheticPackagesTableAnnotationComposer
@@ -2390,6 +5189,26 @@ class $$SyntheticPackagesTableAnnotationComposer
 
   GeneratedColumn<String> get externalReference => $composableBuilder(
     column: $table.externalReference,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get identificationStatus => $composableBuilder(
+    column: $table.identificationStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get identificationConfidence => $composableBuilder(
+    column: $table.identificationConfidence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get unitPriceMinorSnapshot => $composableBuilder(
+    column: $table.unitPriceMinorSnapshot,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currencySnapshot => $composableBuilder(
+    column: $table.currencySnapshot,
     builder: (column) => column,
   );
 
@@ -2416,6 +5235,53 @@ class $$SyntheticPackagesTableAnnotationComposer
           }) => $$DeliveryRunsTableAnnotationComposer(
             $db: $db,
             $table: $db.deliveryRuns,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$LogisticsOperatorsTableAnnotationComposer get identifiedOperatorId {
+    final $$LogisticsOperatorsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.identifiedOperatorId,
+          referencedTable: $db.logisticsOperators,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LogisticsOperatorsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.logisticsOperators,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$OperatorTariffsTableAnnotationComposer get tariffId {
+    final $$OperatorTariffsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tariffId,
+      referencedTable: $db.operatorTariffs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OperatorTariffsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.operatorTariffs,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2464,7 +5330,12 @@ class $$SyntheticPackagesTableTableManager
           $$SyntheticPackagesTableUpdateCompanionBuilder,
           (SyntheticPackage, $$SyntheticPackagesTableReferences),
           SyntheticPackage,
-          PrefetchHooks Function({bool deliveryRunId, bool deliveryEventsRefs})
+          PrefetchHooks Function({
+            bool deliveryRunId,
+            bool identifiedOperatorId,
+            bool tariffId,
+            bool deliveryEventsRefs,
+          })
         > {
   $$SyntheticPackagesTableTableManager(
     _$RiderBizDatabase db,
@@ -2488,6 +5359,12 @@ class $$SyntheticPackagesTableTableManager
                 Value<String> deliveryRunId = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String?> externalReference = const Value.absent(),
+                Value<String?> identifiedOperatorId = const Value.absent(),
+                Value<String> identificationStatus = const Value.absent(),
+                Value<double?> identificationConfidence = const Value.absent(),
+                Value<String?> tariffId = const Value.absent(),
+                Value<int?> unitPriceMinorSnapshot = const Value.absent(),
+                Value<String?> currencySnapshot = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> needsSync = const Value.absent(),
@@ -2497,6 +5374,12 @@ class $$SyntheticPackagesTableTableManager
                 deliveryRunId: deliveryRunId,
                 status: status,
                 externalReference: externalReference,
+                identifiedOperatorId: identifiedOperatorId,
+                identificationStatus: identificationStatus,
+                identificationConfidence: identificationConfidence,
+                tariffId: tariffId,
+                unitPriceMinorSnapshot: unitPriceMinorSnapshot,
+                currencySnapshot: currencySnapshot,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 needsSync: needsSync,
@@ -2508,6 +5391,12 @@ class $$SyntheticPackagesTableTableManager
                 required String deliveryRunId,
                 Value<String> status = const Value.absent(),
                 Value<String?> externalReference = const Value.absent(),
+                Value<String?> identifiedOperatorId = const Value.absent(),
+                Value<String> identificationStatus = const Value.absent(),
+                Value<double?> identificationConfidence = const Value.absent(),
+                Value<String?> tariffId = const Value.absent(),
+                Value<int?> unitPriceMinorSnapshot = const Value.absent(),
+                Value<String?> currencySnapshot = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<bool> needsSync = const Value.absent(),
@@ -2517,6 +5406,12 @@ class $$SyntheticPackagesTableTableManager
                 deliveryRunId: deliveryRunId,
                 status: status,
                 externalReference: externalReference,
+                identifiedOperatorId: identifiedOperatorId,
+                identificationStatus: identificationStatus,
+                identificationConfidence: identificationConfidence,
+                tariffId: tariffId,
+                unitPriceMinorSnapshot: unitPriceMinorSnapshot,
+                currencySnapshot: currencySnapshot,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 needsSync: needsSync,
@@ -2531,7 +5426,12 @@ class $$SyntheticPackagesTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({deliveryRunId = false, deliveryEventsRefs = false}) {
+              ({
+                deliveryRunId = false,
+                identifiedOperatorId = false,
+                tariffId = false,
+                deliveryEventsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
@@ -2561,6 +5461,28 @@ class $$SyntheticPackagesTableTableManager
                                 ._deliveryRunIdTable(db),
                             referencedColumn: $$SyntheticPackagesTableReferences
                                 ._deliveryRunIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (identifiedOperatorId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.identifiedOperatorId,
+                            referencedTable: $$SyntheticPackagesTableReferences
+                                ._identifiedOperatorIdTable(db),
+                            referencedColumn: $$SyntheticPackagesTableReferences
+                                ._identifiedOperatorIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (tariffId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.tariffId,
+                            referencedTable: $$SyntheticPackagesTableReferences
+                                ._tariffIdTable(db),
+                            referencedColumn: $$SyntheticPackagesTableReferences
+                                ._tariffIdTable(db)
                                 .id,
                           ) as T;
                         }
@@ -2610,7 +5532,12 @@ typedef $$SyntheticPackagesTableProcessedTableManager =
       $$SyntheticPackagesTableUpdateCompanionBuilder,
       (SyntheticPackage, $$SyntheticPackagesTableReferences),
       SyntheticPackage,
-      PrefetchHooks Function({bool deliveryRunId, bool deliveryEventsRefs})
+      PrefetchHooks Function({
+        bool deliveryRunId,
+        bool identifiedOperatorId,
+        bool tariffId,
+        bool deliveryEventsRefs,
+      })
     >;
 typedef $$DeliveryEventsTableCreateCompanionBuilder =
     DeliveryEventsCompanion Function({
@@ -2948,6 +5875,10 @@ class $RiderBizDatabaseManager {
   $RiderBizDatabaseManager(this._db);
   $$LogisticsOperatorsTableTableManager get logisticsOperators =>
       $$LogisticsOperatorsTableTableManager(_db, _db.logisticsOperators);
+  $$OperatorTariffsTableTableManager get operatorTariffs =>
+      $$OperatorTariffsTableTableManager(_db, _db.operatorTariffs);
+  $$OperatorLabelProfilesTableTableManager get operatorLabelProfiles =>
+      $$OperatorLabelProfilesTableTableManager(_db, _db.operatorLabelProfiles);
   $$DeliveryRunsTableTableManager get deliveryRuns =>
       $$DeliveryRunsTableTableManager(_db, _db.deliveryRuns);
   $$SyntheticPackagesTableTableManager get syntheticPackages =>

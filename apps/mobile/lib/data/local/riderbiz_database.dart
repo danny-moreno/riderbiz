@@ -10,6 +10,59 @@ class LogisticsOperators extends Table {
 
   DateTimeColumn get createdAt => dateTime()();
 
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class OperatorTariffs extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get operatorId => text().references(
+    LogisticsOperators,
+    #id,
+    onDelete: KeyAction.restrict,
+  )();
+
+  IntColumn get version => integer()();
+
+  IntColumn get unitPriceMinor =>
+      integer().customConstraint('NOT NULL CHECK (unit_price_minor >= 0)')();
+
+  TextColumn get currency => text().withLength(min: 3, max: 3)();
+
+  DateTimeColumn get validFrom => dateTime()();
+
+  DateTimeColumn get validUntil => dateTime().nullable()();
+
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {operatorId, version},
+  ];
+}
+
+class OperatorLabelProfiles extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get operatorId =>
+      text().references(LogisticsOperators, #id, onDelete: KeyAction.cascade)();
+
+  TextColumn get marker => text()();
+
+  IntColumn get priority => integer().withDefault(const Constant(0))();
+
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+
+  DateTimeColumn get createdAt => dateTime()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
@@ -44,6 +97,31 @@ class SyntheticPackages extends Table {
 
   TextColumn get externalReference => text().nullable()();
 
+  TextColumn get identifiedOperatorId => text().nullable().references(
+    LogisticsOperators,
+    #id,
+    onDelete: KeyAction.restrict,
+  )();
+
+  TextColumn get identificationStatus => text().customConstraint(
+    "NOT NULL DEFAULT 'unknown' "
+    "CHECK (identification_status IN "
+    "('identified', 'low_confidence', 'unknown', 'manual'))",
+  )();
+
+  RealColumn get identificationConfidence => real().nullable()();
+
+  TextColumn get tariffId => text().nullable().references(
+    OperatorTariffs,
+    #id,
+    onDelete: KeyAction.restrict,
+  )();
+
+  IntColumn get unitPriceMinorSnapshot => integer().nullable()();
+
+  TextColumn get currencySnapshot =>
+      text().withLength(min: 3, max: 3).nullable()();
+
   DateTimeColumn get createdAt => dateTime()();
 
   DateTimeColumn get updatedAt => dateTime()();
@@ -71,7 +149,14 @@ class DeliveryEvents extends Table {
 }
 
 @DriftDatabase(
-  tables: [LogisticsOperators, DeliveryRuns, SyntheticPackages, DeliveryEvents],
+  tables: [
+    LogisticsOperators,
+    OperatorTariffs,
+    OperatorLabelProfiles,
+    DeliveryRuns,
+    SyntheticPackages,
+    DeliveryEvents,
+  ],
 )
 class RiderBizDatabase extends _$RiderBizDatabase {
   RiderBizDatabase() : super(driftDatabase(name: 'riderbiz'));
@@ -87,6 +172,38 @@ class RiderBizDatabase extends _$RiderBizDatabase {
           syntheticPackages.externalReference,
         );
       }
+
+      if (from < 3) {
+        await migrator.addColumn(
+          logisticsOperators,
+          logisticsOperators.isActive,
+        );
+
+        await migrator.createTable(operatorTariffs);
+        await migrator.createTable(operatorLabelProfiles);
+
+        await migrator.addColumn(
+          syntheticPackages,
+          syntheticPackages.identifiedOperatorId,
+        );
+        await migrator.addColumn(
+          syntheticPackages,
+          syntheticPackages.identificationStatus,
+        );
+        await migrator.addColumn(
+          syntheticPackages,
+          syntheticPackages.identificationConfidence,
+        );
+        await migrator.addColumn(syntheticPackages, syntheticPackages.tariffId);
+        await migrator.addColumn(
+          syntheticPackages,
+          syntheticPackages.unitPriceMinorSnapshot,
+        );
+        await migrator.addColumn(
+          syntheticPackages,
+          syntheticPackages.currencySnapshot,
+        );
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -94,5 +211,5 @@ class RiderBizDatabase extends _$RiderBizDatabase {
   );
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 }
