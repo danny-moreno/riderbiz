@@ -135,4 +135,90 @@ void main() {
 
     expect(await service.hasActiveConfiguration(at: validationTime), isFalse);
   });
+  test(
+    'creates a new tariff version without deleting the previous one',
+    () async {
+      await createConfiguration();
+
+      final secondValidFrom = DateTime.utc(2026, 10, 1);
+
+      final secondTariff = await service.createTariffVersion(
+        operatorId: 'OP-ALFA',
+        tariffId: 'TAR-ALFA-2',
+        unitPriceMinor: 135,
+        currency: 'eur',
+        validFrom: secondValidFrom,
+        createdAt: DateTime.utc(2026, 9, 20),
+      );
+
+      final tariffs = await (database.select(
+        database.operatorTariffs,
+      )..orderBy([(tariff) => OrderingTerm.asc(tariff.version)])).get();
+
+      expect(tariffs, hasLength(2));
+
+      expect(tariffs.first.id, 'TAR-ALFA-1');
+      expect(tariffs.first.version, 1);
+      expect(tariffs.first.unitPriceMinor, 120);
+      expect(tariffs.first.validUntil?.toUtc(), secondValidFrom);
+
+      expect(secondTariff.id, 'TAR-ALFA-2');
+      expect(secondTariff.version, 2);
+      expect(secondTariff.unitPriceMinor, 135);
+      expect(secondTariff.currency, 'EUR');
+      expect(secondTariff.validFrom.toUtc(), secondValidFrom);
+      expect(secondTariff.validUntil, equals(null));
+    },
+  );
+
+  test('selects the tariff that is valid at the requested time', () async {
+    await createConfiguration();
+
+    await service.createTariffVersion(
+      operatorId: 'OP-ALFA',
+      tariffId: 'TAR-ALFA-2',
+      unitPriceMinor: 135,
+      currency: 'EUR',
+      validFrom: DateTime.utc(2026, 10, 1),
+    );
+
+    final septemberTariffs = await service.activeTariffsForOperator(
+      operatorId: 'OP-ALFA',
+      at: DateTime.utc(2026, 9, 15),
+    );
+
+    final octoberTariffs = await service.activeTariffsForOperator(
+      operatorId: 'OP-ALFA',
+      at: DateTime.utc(2026, 10, 15),
+    );
+
+    expect(septemberTariffs, hasLength(1));
+    expect(septemberTariffs.single.id, 'TAR-ALFA-1');
+    expect(septemberTariffs.single.unitPriceMinor, 120);
+
+    expect(octoberTariffs, hasLength(1));
+    expect(octoberTariffs.single.id, 'TAR-ALFA-2');
+    expect(octoberTariffs.single.unitPriceMinor, 135);
+  });
+
+  test('rejects a tariff version with an invalid effective date', () async {
+    await createConfiguration();
+
+    await expectLater(
+      service.createTariffVersion(
+        operatorId: 'OP-ALFA',
+        tariffId: 'TAR-ALFA-2',
+        unitPriceMinor: 135,
+        currency: 'EUR',
+        validFrom: validFrom,
+      ),
+      throwsA(isA<StateError>()),
+    );
+
+    final tariffs = await database.select(database.operatorTariffs).get();
+
+    expect(tariffs, hasLength(1));
+    expect(tariffs.single.id, 'TAR-ALFA-1');
+    expect(tariffs.single.validUntil, equals(null));
+  });
 }
