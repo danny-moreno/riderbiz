@@ -23,7 +23,7 @@ Reglas obligatorias:
 | ADR-001 | Stack tecnológico móvil | ACEPTADO | Git: `docs/decisions/ADR-001-mobile-technology-stack.md` |
 | ADR-002 | Persistencia local estructurada | ACEPTADO | Git: `docs/decisions/ADR-002-local-persistence.md` |
 | ADR-003 | Conservación de datos personales y flujo de entregas | ACEPTADO | Git: `docs/decisions/ADR-003-personal-data-retention.md` |
-| ADR-004 | Optimización adaptativa de rutas | RESERVADO / PENDIENTE | Ya citado por ADR-003; crear mediante Issue independiente |
+| ADR-004 | Optimización adaptativa de rutas | PROPUESTO | Git: `docs/decisions/ADR-004-adaptive-route-optimization.md`; pendiente de validación técnica |
 | ADR-005 | Sistema visual y accesibilidad | RESERVADO / PENDIENTE | Ya citado por ADR-003; crear mediante Issue independiente |
 | ADR-006 | Identidad, autenticación, organizaciones y autorización | ACEPTADO | Git: `docs/decisions/ADR-006-identity-authentication-organizations-authorization.md` |
 | ADR-007 | Paradas operativas, entregas y recogidas | PLANIFICADO | Crear después de delimitarlo frente a ADR-004 |
@@ -52,3 +52,4 @@ ADR-006 queda incorporado al repositorio mediante la Issue #17. Tras la fusión 
 ## Historial
 
 - Versión 1.0 (2026-09-06): creación del registro y corrección de la colisión entre ADR-002 de Git y ADR-002 de Drive.
+- Versión 1.1 (2026-10-15): ADR-004 abierto como propuesta de optimización adaptativa de rutas mediante la Issue #19.
