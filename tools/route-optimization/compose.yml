@@ -1,0 +1,32 @@
+name: riderbiz-route-validation
+
+services:
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend@sha256:b0045097b8b4ad5e72dce6b900326cd6ee0e98c729709214e674d0472b463f49
+    platform: linux/arm64
+    command:
+      - osrm-routed
+      - --algorithm
+      - mld
+      - --max-table-size
+      - "250"
+      - /data/navarra-latest.osrm
+    volumes:
+      - ./data:/data:ro
+    ports:
+      - "127.0.0.1:5000:5000"
+    restart: "no"
+
+  vroom:
+    image: ghcr.io/vroom-project/vroom-docker@sha256:189fabbb238f4891d821008b47b62085357be6a74f178656af5b253ced8f7069
+    platform: linux/arm64
+    depends_on:
+      - osrm
+    environment:
+      VROOM_ROUTER: osrm
+      VROOM_LOG: "false"
+    volumes:
+      - ./vroom:/conf
+    ports:
+      - "127.0.0.1:3000:3000"
+    restart: "no"
