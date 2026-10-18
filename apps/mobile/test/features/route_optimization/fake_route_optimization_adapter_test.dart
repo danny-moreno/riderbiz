@@ -57,6 +57,7 @@ void main() {
         latitude: 42.8125,
         longitude: -1.6458,
       ),
+      departureAt: DateTime.utc(2026, 10, 15, 8),
       timeout: timeout,
       reoptimizePendingOnly: reoptimizePendingOnly,
     );

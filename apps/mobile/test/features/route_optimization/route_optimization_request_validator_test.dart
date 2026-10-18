@@ -58,6 +58,7 @@ void main() {
         walkingClusters: clusters,
       ),
       currentLocation: coordinate,
+      departureAt: DateTime.utc(2026, 10, 15, 8),
       timeout: const Duration(seconds: 10),
     );
   }

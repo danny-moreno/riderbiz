@@ -122,6 +122,7 @@ class SyntheticRouteScenarioFactory {
           latitude: 42.8100,
           longitude: -1.6400,
         ),
+        departureAt: DateTime.utc(2026, 10, 15, 8),
         timeout: const Duration(seconds: 10),
         reoptimizePendingOnly: reoptimizePendingOnly,
       ),

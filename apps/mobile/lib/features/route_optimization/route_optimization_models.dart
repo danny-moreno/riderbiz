@@ -165,6 +165,7 @@ class RouteOptimizationRequest {
   RouteOptimizationRequest({
     required this.plan,
     required this.currentLocation,
+    required this.departureAt,
     required this.timeout,
     this.reoptimizePendingOnly = false,
   }) : assert(!timeout.isNegative),
@@ -172,6 +173,7 @@ class RouteOptimizationRequest {
 
   final RoutePlan plan;
   final RouteCoordinate currentLocation;
+  final DateTime departureAt;
   final Duration timeout;
   final bool reoptimizePendingOnly;
 }
