@@ -1,5 +1,5 @@
 cliArgs:
-  geometry: false
+  geometry: true
   planmode: false
   threads: 4
   explore: 5

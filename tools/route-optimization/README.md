@@ -248,6 +248,9 @@ Las coordenadas de las API se expresan como `[longitud, latitud]`.
 
 ## Configuración y límites
 
+- VROOM utiliza `geometry: true` para obtener distancias de la ruta y de cada paso.
+- En la comprobación de dos tareas se observaron 2.501 metros en total.
+- La geometría devuelta no se almacena en el modelo de dominio.
 - OSRM utiliza el algoritmo MLD.
 - Perfil de circulación: coche.
 - Tamaño máximo de tabla OSRM: 250 ubicaciones.
