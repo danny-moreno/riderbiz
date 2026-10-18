@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'route_optimization_models.dart';
 import 'route_optimization_port.dart';
+import 'route_optimization_request_validator.dart';
 
 class FakeRouteOptimizationAdapter implements RouteOptimizationPort {
   const FakeRouteOptimizationAdapter({
@@ -25,7 +26,7 @@ class FakeRouteOptimizationAdapter implements RouteOptimizationPort {
     RouteOptimizationCancellationSignal? cancellationSignal,
   }) async {
     cancellationSignal?.throwIfCancelled();
-    _validateRequest(request);
+    const RouteOptimizationRequestValidator().validate(request);
 
     if (simulatedFailure != null) {
       throw RouteOptimizationFailure(
@@ -72,46 +73,6 @@ class FakeRouteOptimizationAdapter implements RouteOptimizationPort {
         warnings: const ['Synthetic deterministic distances were used.'],
       ),
     );
-  }
-
-  void _validateRequest(RouteOptimizationRequest request) {
-    final stopIds = <String>{};
-
-    for (final stop in request.plan.stops) {
-      if (!stopIds.add(stop.id)) {
-        throw const RouteOptimizationFailure(
-          type: RouteOptimizationFailureType.invalidRequest,
-          message: 'The route contains duplicated stop identifiers.',
-        );
-      }
-    }
-
-    final taskIds = <String>{};
-
-    for (final task in request.plan.tasks) {
-      if (!taskIds.add(task.id)) {
-        throw const RouteOptimizationFailure(
-          type: RouteOptimizationFailureType.invalidRequest,
-          message: 'The route contains duplicated task identifiers.',
-        );
-      }
-
-      if (!stopIds.contains(task.stopId)) {
-        throw const RouteOptimizationFailure(
-          type: RouteOptimizationFailureType.invalidRequest,
-          message: 'A route task references an unknown stop.',
-        );
-      }
-    }
-
-    for (final stopId in request.plan.currentOrder) {
-      if (!stopIds.contains(stopId)) {
-        throw const RouteOptimizationFailure(
-          type: RouteOptimizationFailureType.invalidRequest,
-          message: 'The current route order references an unknown stop.',
-        );
-      }
-    }
   }
 
   List<RouteTask> _eligibleTasks(RouteOptimizationRequest request) {
