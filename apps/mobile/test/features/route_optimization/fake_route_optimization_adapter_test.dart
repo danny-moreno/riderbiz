@@ -257,6 +257,42 @@ void main() {
       );
     });
 
+    test(
+      'does not return a candidate when cancelled during execution',
+      () async {
+        const delayedAdapter = FakeRouteOptimizationAdapter(
+          simulatedLatency: Duration(milliseconds: 50),
+        );
+        final cancellationSignal = RouteOptimizationCancellationSignal();
+
+        final operation = delayedAdapter.optimize(
+          request(
+            tasks: [task(id: 'TASK-A', stopId: 'STOP-A')],
+            stops: [
+              stop(id: 'STOP-A', taskIds: ['TASK-A']),
+            ],
+            currentOrder: ['STOP-A'],
+          ),
+          cancellationSignal: cancellationSignal,
+        );
+
+        final expectation = expectLater(
+          operation,
+          throwsA(
+            isA<RouteOptimizationFailure>().having(
+              (failure) => failure.type,
+              'type',
+              RouteOptimizationFailureType.cancelled,
+            ),
+          ),
+        );
+
+        await Future<void>.delayed(Duration.zero);
+        cancellationSignal.cancel();
+
+        await expectation;
+      },
+    );
     test('throws a typed failure when the timeout is exceeded', () async {
       const slowAdapter = FakeRouteOptimizationAdapter(
         simulatedLatency: Duration(milliseconds: 50),
