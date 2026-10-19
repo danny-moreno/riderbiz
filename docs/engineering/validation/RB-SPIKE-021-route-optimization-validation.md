@@ -350,16 +350,41 @@ Las cinco repeticiones de cada volumen devolvieron las mismas métricas:
 
 Estas métricas son estimaciones del escenario sintético. No prueban ahorro frente a la ruta habitual ni tiempos observados en reparto real.
 
+### 18.1 Comparación con el orden inicial sintético
+
+Mediciones realizadas el 2026-10-19.
+
+Se evaluaron con el mismo OSRM ambos órdenes: el inicial generado y el propuesto por VROOM. Se mantuvieron el mismo origen, las mismas tareas y los mismos tiempos de servicio, sin ventanas horarias ni retorno obligatorio al origen.
+
+| Tareas | Distancia inicial m | Distancia propuesta m | Total inicial s | Total propuesto s | Ahorro s | Reducción total |
+|---:|---:|---:|---:|---:|---:|---:|
+| 60 | 22.209 | 7.342 | 12.596,0 | 9.953,8 | 2.642,2 | 20,97 % |
+| 80 | 29.745 | 9.553 | 16.807,8 | 13.215,0 | 3.592,8 | 21,37 % |
+| 120 | 40.813 | 13.223 | 24.744,4 | 19.659,1 | 5.085,3 | 20,55 % |
+
+Las tres pruebas terminaron correctamente y comprobaron que la propuesta contenía todas las paradas pendientes, sin duplicados.
+
+Cada volumen se comparó una vez en esta ejecución. La repetibilidad de esta comparación no se ha medido todavía.
+
+El orden inicial corresponde a una cuadrícula sintética. No representa la ruta habitual de un repartidor experimentado y puede favorecer diferencias grandes frente a la propuesta optimizada.
+
+Estas cifras no deben utilizarse como promesa comercial de ahorro.
+
+Las métricas reevaluadas con OSRM difieren ligeramente de las devueltas por VROOM. La comparación utiliza exclusivamente el mismo evaluador OSRM para ambos órdenes; queda pendiente caracterizar esas diferencias.
+
+El evaluador actual no calcula ventanas horarias ni recorridos peatonales y los rechaza explícitamente.
+
 ## 19. Pruebas automatizadas
 
 Estado de la suite habitual al registrar esta fase:
 
-- 151 pruebas superadas.
-- Cuatro pruebas locales omitidas por defecto.
+- 163 pruebas superadas.
+- Siete pruebas locales omitidas por defecto.
 - Análisis estático sin incidencias.
 
 Las pruebas locales se ejecutaron explícitamente:
 
+- Tres pruebas de comparación con el orden inicial sintético: superadas.
 - Una prueba de integración mínima: superada.
 - Tres pruebas de volumen: superadas.
 - Cinco solicitudes por volumen: 15 optimizaciones reales completadas.
@@ -407,10 +432,12 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `298b45c` | Integración real mínima desde Dart |
 | `26076c2` | Escenarios vehiculares de volumen |
 | `65aa73f` | Benchmark real de 60, 80 y 120 tareas |
+| `1bb6cb8` | Evaluador OSRM para órdenes fijos |
+| `79dee7d` | Comparación real con el orden inicial sintético |
 
 ## 22. Validaciones pendientes
 
-- Comparación del mismo conjunto de tareas con el orden habitual.
+- Comparación con órdenes habituales representativos de repartidores; la comparación con el orden inicial sintético ya está completada.
 - Ventanas horarias ejecutadas y verificadas con el motor real.
 - Priorización bajo restricciones.
 - Conservación de paradas bloqueadas en el motor real.
@@ -449,3 +476,4 @@ La Issue #21 permanece abierta.
 ## 25. Historial
 
 - Versión 0.1 (2026-10-18): evidencia parcial del dominio neutral, validaciones, integración local y benchmarks vehiculares de 60, 80 y 120 tareas.
+- Versión 0.2 (2026-10-19): evaluador OSRM, comparación con el orden inicial sintético y actualización del estado de pruebas.
