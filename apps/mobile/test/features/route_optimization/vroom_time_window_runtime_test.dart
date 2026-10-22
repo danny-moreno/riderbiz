@@ -113,11 +113,16 @@ void main() {
         expect(candidate.metrics.serviceDuration, const Duration(seconds: 120));
         expect(
           candidate.metrics.totalDuration,
-          candidate.metrics.travelDuration +
+          candidate.metrics.departureDelay +
+              candidate.metrics.travelDuration +
               candidate.metrics.serviceDuration +
               candidate.metrics.waitingDuration,
         );
 
+        expect(
+          candidate.metrics.totalDuration.inMicroseconds / 1000000,
+          closeTo((steps.last['arrival'] as num).toDouble(), 0.001),
+        );
         // Synthetic schedule evidence, not application telemetry.
         // ignore: avoid_print
         print(
@@ -132,6 +137,9 @@ void main() {
             'route_waiting_seconds': route['waiting_time'],
             'route_travel_seconds': route['duration'],
             'route_end_seconds': steps.last['arrival'],
+            'mapped_departure_delay_seconds':
+                candidate.metrics.departureDelay.inSeconds,
+            'mapped_total_seconds': candidate.metrics.totalDuration.inSeconds,
           }),
         );
       });

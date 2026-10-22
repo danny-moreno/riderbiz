@@ -30,12 +30,14 @@ void main() {
             "steps": [
               {
                 "type": "start",
+                "arrival": 0,
                 "duration": 0,
                 "distance": 0,
                 "violations": []
               },
               {
                 "type": "job",
+                "arrival": 146,
                 "id": 1,
                 "duration": 146,
                 "distance": 998,
@@ -43,6 +45,7 @@ void main() {
               },
               {
                 "type": "job",
+                "arrival": 471,
                 "id": 2,
                 "duration": 351,
                 "distance": 2501,
@@ -50,6 +53,7 @@ void main() {
               },
               {
                 "type": "end",
+                "arrival": 591,
                 "duration": 351,
                 "distance": 2501,
                 "violations": []
@@ -120,9 +124,50 @@ void main() {
       );
     });
 
+    test('includes departure delay in total duration', () {
+      final response = validResponse();
+
+      for (final value in steps(response)) {
+        final step = value as Map<String, dynamic>;
+        step['arrival'] = (step['arrival'] as num) + 3454;
+      }
+
+      final candidate = mapper.map(
+        response: response,
+        mappedRequest: mappedRequest,
+        calculationDuration: Duration.zero,
+      );
+
+      expect(candidate.metrics.departureDelay, const Duration(seconds: 3454));
+      expect(candidate.metrics.travelDuration, const Duration(seconds: 351));
+      expect(candidate.metrics.serviceDuration, const Duration(seconds: 240));
+      expect(candidate.metrics.totalDuration, const Duration(seconds: 4045));
+    });
+
+    test('rejects an end arrival inconsistent with route totals', () {
+      final response = validResponse();
+      steps(response).last['arrival'] = 600;
+
+      expectInvalid(response);
+    });
+
+    test('rejects a negative departure delay', () {
+      final response = validResponse();
+      steps(response).first['arrival'] = -1;
+
+      expectInvalid(response);
+    });
+
+    test('rejects a missing departure arrival', () {
+      final response = validResponse();
+      (steps(response).first as Map<String, dynamic>).remove('arrival');
+
+      expectInvalid(response);
+    });
     test('includes waiting time in total duration', () {
       final response = validResponse();
       route(response)['waiting_time'] = 60;
+      steps(response).last['arrival'] = 651;
 
       final candidate = mapper.map(
         response: response,

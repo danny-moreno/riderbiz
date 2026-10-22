@@ -126,6 +126,14 @@ class VroomResponseMapper {
     final service = _number(route['service'], 'service duration');
     final waiting = _number(route['waiting_time'], 'waiting duration');
     final setup = _number(route['setup'], 'setup duration');
+    final departureDelay = _number(first['arrival'], 'departure delay');
+    final endArrival = _number(last['arrival'], 'end arrival');
+
+    final expectedEnd = departureDelay + travel + service + waiting + setup;
+
+    if ((endArrival - expectedEnd).abs() > 0.001) {
+      _reject('The route schedule does not match its duration totals.');
+    }
 
     if (setup != 0) {
       _reject('Unexpected setup time is not supported.');
@@ -139,6 +147,7 @@ class VroomResponseMapper {
         travelDuration: _duration(travel),
         serviceDuration: _duration(service),
         waitingDuration: _duration(waiting),
+        departureDelay: _duration(departureDelay),
         calculationDuration: calculationDuration,
       ),
       explanation: const OptimizationExplanation(

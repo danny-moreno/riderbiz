@@ -121,20 +121,23 @@ class RouteMetrics {
     required this.serviceDuration,
     required this.calculationDuration,
     this.waitingDuration = Duration.zero,
+    this.departureDelay = Duration.zero,
   }) : assert(distanceMeters >= 0),
        assert(!travelDuration.isNegative),
        assert(!serviceDuration.isNegative),
        assert(!calculationDuration.isNegative),
-       assert(!waitingDuration.isNegative);
+       assert(!waitingDuration.isNegative),
+       assert(!departureDelay.isNegative);
 
   final int distanceMeters;
   final Duration travelDuration;
   final Duration serviceDuration;
   final Duration calculationDuration;
   final Duration waitingDuration;
+  final Duration departureDelay;
 
   Duration get totalDuration =>
-      travelDuration + serviceDuration + waitingDuration;
+      departureDelay + travelDuration + serviceDuration + waitingDuration;
 }
 
 class OptimizationExplanation {
