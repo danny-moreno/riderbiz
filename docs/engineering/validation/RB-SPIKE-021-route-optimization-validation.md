@@ -189,7 +189,7 @@ Estos resultados validan comportamiento de software, no calidad real de rutas.
 La duración total se calcula como:
 
 ```text
-conducción + servicio + espera
+retraso de salida + conducción + servicio + espera
 ```
 
 El tiempo de cálculo del optimizador se mide por separado.
@@ -374,12 +374,46 @@ Las métricas reevaluadas con OSRM difieren ligeramente de las devueltas por VRO
 
 El evaluador actual no calcula ventanas horarias ni recorridos peatonales y los rechaza explícitamente.
 
+### 18.2 Ventanas horarias y retraso de salida
+
+Se ejecutaron dos casos sintéticos de una parada contra VROOM y OSRM locales. La comprobación inicial se realizó el 2026-10-19 y la corrección del cómputo se verificó el 2026-10-22.
+
+Caso viable:
+
+- Ventana de inicio del servicio: entre 3.600 y 7.200 segundos desde `departureAt`.
+- Retraso de salida decidido por VROOM: 3.454 segundos.
+- Conducción: 146 segundos.
+- Inicio del servicio: segundo 3.600.
+- Servicio: 120 segundos.
+- Espera en la parada: cero segundos.
+- Final: segundo 3.720.
+
+La primera comprobación reveló que las métricas omitían el retraso previo a la salida. Se añadió `departureDelay` al dominio y se incorporó a `totalDuration`.
+
+Resultado corregido:
+
+3.454 + 146 + 120 + 0 = 3.720 segundos desde la hora de salida solicitada.
+
+El conversor exige horarios de inicio y final no negativos y comprueba que el final coincide con la suma de retraso, conducción, servicio y espera.
+
+Caso imposible:
+
+- Ventana de inicio del servicio: entre cero y un segundo desde `departureAt`.
+- El motor dejó la tarea sin asignar.
+- El adaptador rechazó la propuesta incompleta.
+
+Actualmente ese rechazo utiliza `invalidResponse`. Queda pendiente distinguir una solución inviable de una respuesta mal formada mediante un resultado específico.
+
+Ambos casos pasaron. No se ha validado todavía el cumplimiento independiente de todas las ventanas en rutas de múltiples paradas.
+
+La prueba viable compara el horario de una respuesta directa con otra solicitud independiente del adaptador. Funcionó en este escenario, pero deberá mejorarse para verificar una única respuesta sin depender de la repetibilidad del motor.
+
 ## 19. Pruebas automatizadas
 
 Estado de la suite habitual al registrar esta fase:
 
-- 163 pruebas superadas.
-- Siete pruebas locales omitidas por defecto.
+- 167 pruebas superadas.
+- Nueve pruebas locales omitidas por defecto.
 - Análisis estático sin incidencias.
 
 Las pruebas locales se ejecutaron explícitamente:
@@ -388,6 +422,7 @@ Las pruebas locales se ejecutaron explícitamente:
 - Una prueba de integración mínima: superada.
 - Tres pruebas de volumen: superadas.
 - Cinco solicitudes por volumen: 15 optimizaciones reales completadas.
+- Dos pruebas de ventanas horarias: superadas; caso viable y caso imposible.
 
 Activación:
 
@@ -434,11 +469,13 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `65aa73f` | Benchmark real de 60, 80 y 120 tareas |
 | `1bb6cb8` | Evaluador OSRM para órdenes fijos |
 | `79dee7d` | Comparación real con el orden inicial sintético |
+| `c6f44a4` | Validación real de ventanas horarias |
+| `44b9561` | Inclusión del retraso de salida y comprobación del horario total |
 
 ## 22. Validaciones pendientes
 
 - Comparación con órdenes habituales representativos de repartidores; la comparación con el orden inicial sintético ya está completada.
-- Ventanas horarias ejecutadas y verificadas con el motor real.
+- Ventanas horarias de múltiples paradas, con verificación independiente de cada inicio de servicio; los dos casos básicos de una parada ya están comprobados.
 - Priorización bajo restricciones.
 - Conservación de paradas bloqueadas en el motor real.
 - Reoptimización real después de completar tareas.
@@ -477,3 +514,4 @@ La Issue #21 permanece abierta.
 
 - Versión 0.1 (2026-10-18): evidencia parcial del dominio neutral, validaciones, integración local y benchmarks vehiculares de 60, 80 y 120 tareas.
 - Versión 0.2 (2026-10-19): evaluador OSRM, comparación con el orden inicial sintético y actualización del estado de pruebas.
+- Versión 0.3 (2026-10-22): ventanas horarias básicas, corrección del retraso de salida y actualización a 167 pruebas superadas y nueve locales omitidas.
