@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:riderbiz_mobile/scanner_screen.dart';
 import 'package:riderbiz_mobile/location_validation_service.dart';
+import 'package:riderbiz_mobile/features/route_optimization/route_validation_screen.dart';
 
 void main() {
   runApp(RiderBizValidationApp(store: LocalPackageStore()));
@@ -188,7 +189,22 @@ class _PackageValidationScreenState extends State<PackageValidationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('RiderBiz · Validación local')),
+      appBar: AppBar(
+        title: const Text('RiderBiz · Validación local'),
+        actions: [
+          IconButton(
+            tooltip: 'Probar ruta sintética',
+            icon: const Icon(Icons.route),
+            onPressed: () {
+              Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => const RouteValidationScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: _isBusy
             ? const CircularProgressIndicator()
