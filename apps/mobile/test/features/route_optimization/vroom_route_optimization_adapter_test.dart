@@ -140,6 +140,68 @@ void main() {
       expect(result.metrics.totalDuration, const Duration(seconds: 266));
     });
 
+    test('sends an explicit destination and includes its final leg', () async {
+      final received = Completer<Map<String, dynamic>>();
+
+      server.listen((incoming) async {
+        final body = await utf8.decoder.bind(incoming).join();
+        received.complete(jsonDecode(body) as Map<String, dynamic>);
+
+        final response =
+            jsonDecode(successfulResponse()) as Map<String, dynamic>;
+        final route =
+            (response['routes'] as List).single as Map<String, dynamic>;
+        final steps = route['steps'] as List;
+
+        route['duration'] = 246;
+        route['distance'] = 1498;
+        steps.last['duration'] = 246;
+        steps.last['distance'] = 1498;
+        steps.last['arrival'] = 366;
+
+        incoming.response.headers.contentType = ContentType.json;
+        incoming.response.write(jsonEncode(response));
+        await incoming.response.close();
+      });
+
+      final adapter = VroomRouteOptimizationAdapter(endpoint: endpoint);
+      final result = await adapter.optimize(
+        request(),
+        endLocation: const RouteCoordinate(latitude: 42.82, longitude: -1.63),
+      );
+
+      final payload = await received.future;
+      final vehicle = (payload['vehicles'] as List).single as Map;
+
+      expect(vehicle['end'], [-1.63, 42.82]);
+      expect(result.stopOrder, ['STOP-A']);
+      expect(result.vehicleLegs, hasLength(2));
+      expect(result.vehicleLegs.last.fromStopId, 'STOP-A');
+      expect(result.vehicleLegs.last.toStopId, 'END_LOCATION');
+      expect(result.vehicleLegs.last.distanceMeters, 500);
+      expect(result.vehicleLegs.last.duration, const Duration(seconds: 100));
+      expect(result.metrics.distanceMeters, 1498);
+      expect(result.metrics.totalDuration, const Duration(seconds: 366));
+    });
+
+    test(
+      'rejects an explicit destination when no pending tasks remain',
+      () async {
+        final adapter = VroomRouteOptimizationAdapter(endpoint: endpoint);
+
+        await expectLater(
+          adapter.optimize(
+            request(completed: true),
+            endLocation: const RouteCoordinate(
+              latitude: 42.82,
+              longitude: -1.63,
+            ),
+          ),
+          failure(RouteOptimizationFailureType.invalidRequest),
+        );
+      },
+    );
+
     test('maps unsuccessful HTTP status to a provider error', () async {
       server.listen((incoming) async {
         await incoming.drain<void>();

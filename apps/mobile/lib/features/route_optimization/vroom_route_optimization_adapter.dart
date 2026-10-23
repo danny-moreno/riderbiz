@@ -37,12 +37,23 @@ class VroomRouteOptimizationAdapter implements RouteOptimizationPort {
   Future<RouteCandidate> optimize(
     RouteOptimizationRequest request, {
     RouteOptimizationCancellationSignal? cancellationSignal,
+    RouteCoordinate? endLocation,
   }) async {
     cancellationSignal?.throwIfCancelled();
 
-    final mapped = const VroomRequestMapper().map(request);
+    final mapped = const VroomRequestMapper().map(
+      request,
+      endLocation: endLocation,
+    );
 
     if (mapped.stopIdsByJobId.isEmpty) {
+      if (endLocation != null) {
+        throw const RouteOptimizationFailure(
+          type: RouteOptimizationFailureType.invalidRequest,
+          message:
+              'Travel without pending tasks requires a separate evaluator.',
+        );
+      }
       return RouteCandidate(
         stopOrder: const [],
         vehicleLegs: const [],
