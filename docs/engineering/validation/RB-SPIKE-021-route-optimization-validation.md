@@ -404,7 +404,7 @@ Caso imposible:
 
 Las propuestas con tareas sin asignar se rechazan mediante `incompleteSolution`. Las respuestas mal formadas conservan `invalidResponse`. Una propuesta incompleta no demuestra que el problema sea matemáticamente inviable.
 
-Ambos casos pasaron. No se ha validado todavía el cumplimiento independiente de todas las ventanas en rutas de múltiples paradas.
+Ambos casos pasaron. La validación adicional de tres paradas se documenta en la sección 18.4.
 
 Desde el 2026-10-23, cada caso obtiene una única respuesta de VROOM y utiliza esa misma respuesta para verificar el horario y convertir las métricas. La prueba ya no depende de comparar dos solicitudes independientes.
 
@@ -434,13 +434,40 @@ La prueba comprobó que todas las paradas pendientes aparecían exactamente una 
 
 El escenario no incluye ventanas horarias, bloqueos ni grupos peatonales. El cambio de estados se preparó como dato de prueba; no valida todavía el flujo completo de confirmación de entregas ni su persistencia.
 
+### 18.4 Ventanas horarias en tres paradas
+
+Validación realizada el 2026-10-23 sobre una única respuesta de VROOM.
+
+Se comprobaron individualmente los inicios de servicio mediante `arrival + waiting_time`:
+
+| Parada | Ventana s | Llegada s | Espera s | Inicio del servicio s |
+|---|---|---:|---:|---:|
+| 1 | 600–1.800 | 1.800 | 0 | 1.800 |
+| 2 | 2.400–3.600 | 2.125 | 275 | 2.400 |
+| 3 | 4.200–5.400 | 2.702 | 1.498 | 4.200 |
+
+Todos los tiempos son relativos a `departureAt`.
+
+Las tres paradas quedaron asignadas sin duplicados y sus inicios de servicio cumplieron las ventanas. Estas ventanas limitan el inicio del servicio, no su finalización.
+
+La conversión produjo:
+
+- Retraso de salida: 1.654 s.
+- Conducción: 533 s.
+- Servicio: 360 s.
+- Espera: 1.773 s.
+- Total desde `departureAt`: 4.320 s.
+
+La suma coincide con la hora final devuelta por el motor.
+
+Este resultado valida un escenario sintético pequeño. No demuestra todavía el comportamiento con ventanas superpuestas, varias tareas por portal o cargas de 60–120 tareas con restricciones horarias.
 
 ## 19. Pruebas automatizadas
 
 Estado de la suite habitual al registrar esta fase:
 
 - 167 pruebas superadas.
-- Diez pruebas locales omitidas por defecto.
+- Once pruebas locales omitidas por defecto.
 - Análisis estático sin incidencias.
 
 Las pruebas locales se ejecutaron explícitamente:
@@ -449,7 +476,7 @@ Las pruebas locales se ejecutaron explícitamente:
 - Una prueba de integración mínima: superada.
 - Tres pruebas de volumen: superadas.
 - Cinco solicitudes por volumen: 15 optimizaciones reales completadas.
-- Dos pruebas de ventanas horarias: superadas; caso viable y caso imposible.
+- Tres pruebas de ventanas horarias: superadas; caso viable de una parada, caso imposible y tres paradas con ventanas sucesivas.
 - Una prueba de reoptimización de tareas pendientes: superada.
 
 Activación:
@@ -502,11 +529,11 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `94b52ea` | Verificación y conversión del horario sobre una única respuesta |
 | `8ca1b77` | Distinción entre propuesta incompleta y respuesta inválida |
 | `47c213c` | Reoptimización real de 60 tareas pendientes tras completar 20 de 80 |
+| `378f4d1` | Verificación individual de ventanas horarias en tres paradas |
 
 ## 22. Validaciones pendientes
 
 - Comparación con órdenes habituales representativos de repartidores; la comparación con el orden inicial sintético ya está completada.
-- Ventanas horarias de múltiples paradas, con verificación independiente de cada inicio de servicio; los dos casos básicos de una parada ya están comprobados.
 - Priorización bajo restricciones.
 - Conservación de paradas bloqueadas en el motor real.
 - Reoptimización con ventanas horarias, bloqueos y grupos peatonales; el caso vehicular básico con tareas completadas ya está comprobado.
@@ -520,6 +547,7 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 - Persistencia y eliminación de información temporal.
 - Ejecución pertinente en dispositivos físicos.
 - Evaluación de una versión estable del motor para producción.
+- Ampliación de ventanas horarias a escenarios superpuestos, varias tareas por portal y volúmenes de 60–120 tareas; los casos básicos y el escenario de tres paradas ya están comprobados.
 
 ## 23. Conclusión parcial
 
@@ -549,3 +577,4 @@ La Issue #21 permanece abierta.
 - Versión 0.4 (2026-10-23): pruebas de ventanas horarias sobre una única respuesta del motor.
 - Versión 0.5 (2026-10-23): resultado específico `incompleteSolution` para propuestas con tareas sin asignar.
 - Versión 0.6 (2026-10-23): reoptimización vehicular de tareas pendientes y actualización a diez pruebas locales omitidas por defecto.
+- Versión 0.7 (2026-10-23): ventanas sucesivas en tres paradas y actualización a once pruebas locales omitidas por defecto.
