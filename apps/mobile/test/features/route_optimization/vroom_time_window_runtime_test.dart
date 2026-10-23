@@ -146,6 +146,151 @@ void main() {
         );
       });
 
+      test('respects time windows at three different stops', () async {
+        final coordinates = [
+          const RouteCoordinate(latitude: 42.8100, longitude: -1.6400),
+          const RouteCoordinate(latitude: 42.8150, longitude: -1.6350),
+          const RouteCoordinate(latitude: 42.8125, longitude: -1.6458),
+        ];
+
+        final windows = [
+          [600, 1800],
+          [2400, 3600],
+          [4200, 5400],
+        ];
+
+        final tasks = <RouteTask>[];
+        final stops = <OperationalStop>[];
+
+        for (var index = 0; index < coordinates.length; index++) {
+          final suffix = index + 1;
+          final stopId = 'STOP-SYN-WINDOW-$suffix';
+          final taskId = 'TASK-SYN-WINDOW-$suffix';
+
+          stops.add(
+            OperationalStop(
+              id: stopId,
+              coordinate: coordinates[index],
+              taskIds: [taskId],
+            ),
+          );
+
+          tasks.add(
+            RouteTask(
+              id: taskId,
+              stopId: stopId,
+              type: RouteTaskType.delivery,
+              status: RouteTaskStatus.pending,
+              priority: RoutePriority.normal,
+              serviceDuration: const Duration(seconds: 120),
+              timeWindow: RouteTimeWindow(
+                startsAt: departure.add(Duration(seconds: windows[index][0])),
+                endsAt: departure.add(Duration(seconds: windows[index][1])),
+              ),
+            ),
+          );
+        }
+
+        final input = RouteOptimizationRequest(
+          plan: RoutePlan(
+            id: 'ROUTE-SYN-MULTIPLE-WINDOWS',
+            currentOrder: stops.map((stop) => stop.id).toList(),
+            stops: stops,
+            tasks: tasks,
+          ),
+          currentLocation: const RouteCoordinate(
+            latitude: 42.8125,
+            longitude: -1.6458,
+          ),
+          departureAt: departure,
+          timeout: const Duration(seconds: 40),
+        );
+
+        final mapped = const VroomRequestMapper().map(input);
+        final response = await rawResponse(input);
+
+        expect(response['code'], 0);
+        expect(response['unassigned'], isEmpty);
+
+        final route =
+            (response['routes'] as List).single as Map<String, dynamic>;
+        final routeSteps = (route['steps'] as List)
+            .cast<Map<String, dynamic>>();
+        final jobSteps = routeSteps
+            .where((step) => step['type'] == 'job')
+            .toList();
+
+        expect(jobSteps, hasLength(3));
+        expect(route['violations'], isEmpty);
+
+        final seenIds = <int>{};
+        final scheduleEvidence = <Map<String, Object?>>[];
+
+        for (final step in jobSteps) {
+          final jobId = step['id'] as int;
+          expect(mapped.stopIdsByJobId.containsKey(jobId), isTrue);
+          expect(seenIds.add(jobId), isTrue);
+
+          final stopId = mapped.stopIdsByJobId[jobId]!;
+          final task = tasks.singleWhere((task) => task.stopId == stopId);
+          final window = task.timeWindow!;
+
+          final startBound = window.startsAt.difference(departure).inSeconds;
+          final endBound = window.endsAt.difference(departure).inSeconds;
+          final arrival = (step['arrival'] as num).toDouble();
+          final waiting = (step['waiting_time'] as num).toDouble();
+          final serviceStart = arrival + waiting;
+
+          expect(waiting, greaterThanOrEqualTo(0));
+          expect(serviceStart, inInclusiveRange(startBound, endBound));
+          expect(step['service'], 120);
+          expect(step['violations'], isEmpty);
+
+          scheduleEvidence.add({
+            'stop_id': stopId,
+            'window_start_seconds': startBound,
+            'window_end_seconds': endBound,
+            'arrival_seconds': arrival,
+            'waiting_seconds': waiting,
+            'service_start_seconds': serviceStart,
+          });
+        }
+
+        expect(seenIds, mapped.stopIdsByJobId.keys.toSet());
+
+        final candidate = const VroomResponseMapper().map(
+          response: response,
+          mappedRequest: mapped,
+          calculationDuration: Duration.zero,
+        );
+
+        expect(candidate.stopOrder, hasLength(3));
+        expect(
+          candidate.stopOrder.toSet(),
+          stops.map((stop) => stop.id).toSet(),
+        );
+        expect(candidate.metrics.serviceDuration, const Duration(seconds: 360));
+        expect(
+          candidate.metrics.totalDuration.inMicroseconds / 1000000,
+          closeTo((routeSteps.last['arrival'] as num).toDouble(), 0.001),
+        );
+
+        // Synthetic schedule evidence, not application telemetry.
+        // ignore: avoid_print
+        print(
+          jsonEncode({
+            'scenario': 'three_stops_with_successive_time_windows',
+            'schedule': scheduleEvidence,
+            'departure_delay_seconds':
+                candidate.metrics.departureDelay.inSeconds,
+            'travel_seconds': candidate.metrics.travelDuration.inSeconds,
+            'service_seconds': candidate.metrics.serviceDuration.inSeconds,
+            'waiting_seconds': candidate.metrics.waitingDuration.inSeconds,
+            'total_seconds': candidate.metrics.totalDuration.inSeconds,
+          }),
+        );
+      });
+
       test('rejects a job that cannot be reached within its window', () async {
         final input = request(windowStartSeconds: 0, windowEndSeconds: 1);
 
