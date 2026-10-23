@@ -11,6 +11,7 @@ class TestVroomAdapter extends VroomRouteOptimizationAdapter {
   final requests = <RouteOptimizationRequest>[];
   final destinations = <RouteCoordinate?>[];
   RouteOptimizationCancellationSignal? cancelAfterCall;
+  RouteOptimizationFailure? failureToThrow;
 
   @override
   Future<RouteCandidate> optimize(
@@ -21,6 +22,10 @@ class TestVroomAdapter extends VroomRouteOptimizationAdapter {
     cancellationSignal?.throwIfCancelled();
     requests.add(request);
     destinations.add(endLocation);
+    final configuredFailure = failureToThrow;
+    if (configuredFailure != null) {
+      throw configuredFailure;
+    }
 
     final order = request.plan.currentOrder.reversed.toList();
     final legs = <VehicleLeg>[];
@@ -72,6 +77,7 @@ class TestDirectLegClient extends OsrmDirectLegClient {
   TestDirectLegClient() : super(endpoint: Uri.parse('http://127.0.0.1:5000/'));
 
   final connections = <String>[];
+  RouteOptimizationFailure? failureToThrow;
 
   @override
   Future<VehicleLeg> calculate({
@@ -84,6 +90,10 @@ class TestDirectLegClient extends OsrmDirectLegClient {
   }) async {
     cancellationSignal?.throwIfCancelled();
     connections.add('$fromStopId->$toStopId');
+    final configuredFailure = failureToThrow;
+    if (configuredFailure != null) {
+      throw configuredFailure;
+    }
 
     return VehicleLeg(
       fromStopId: fromStopId,
@@ -271,6 +281,39 @@ void main() {
 
       expect(vroom.requests, isEmpty);
       expect(osrm.connections, isEmpty);
+    });
+
+    test('stops when VROOM fails before completing a segment', () async {
+      const configuredFailure = RouteOptimizationFailure(
+        type: RouteOptimizationFailureType.unavailable,
+        message: 'Synthetic VROOM failure.',
+      );
+      vroom.failureToThrow = configuredFailure;
+
+      await expectLater(
+        adapter.optimize(request(locked: {'C'})),
+        throwsA(same(configuredFailure)),
+      );
+
+      expect(vroom.requests, hasLength(1));
+      expect(osrm.connections, isEmpty);
+    });
+
+    test('stops when a direct leg fails after a completed segment', () async {
+      const configuredFailure = RouteOptimizationFailure(
+        type: RouteOptimizationFailureType.unavailable,
+        message: 'Synthetic OSRM failure.',
+      );
+      osrm.failureToThrow = configuredFailure;
+
+      await expectLater(
+        adapter.optimize(request(locked: {'B', 'C'})),
+        throwsA(same(configuredFailure)),
+      );
+
+      expect(vroom.requests, hasLength(1));
+      expect(vroom.requests.single.plan.currentOrder, ['A']);
+      expect(osrm.connections, ['B->C']);
     });
 
     test('stops between segments when cancellation is requested', () async {
