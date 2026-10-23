@@ -117,10 +117,24 @@ class VroomResponseMapper {
     final endTravel = _number(last['duration'], 'end duration');
     final endDistance = _number(last['distance'], 'end distance');
 
-    if (travel != previousDuration ||
-        distance != previousDistance ||
-        endTravel != travel ||
-        endDistance != distance) {
+    if (endTravel != travel || endDistance != distance) {
+      _reject('Route totals do not match the end step.');
+    }
+
+    if (travel < previousDuration || distance < previousDistance) {
+      _reject('End metrics must not precede the final job metrics.');
+    }
+
+    if (mappedRequest.hasExplicitEnd) {
+      legs.add(
+        VehicleLeg(
+          fromStopId: previousStopId,
+          toStopId: 'END_LOCATION',
+          distanceMeters: distance.round() - previousDistance.round(),
+          duration: _duration(travel - previousDuration),
+        ),
+      );
+    } else if (travel != previousDuration || distance != previousDistance) {
       _reject('Open-route totals do not match the final job.');
     }
 

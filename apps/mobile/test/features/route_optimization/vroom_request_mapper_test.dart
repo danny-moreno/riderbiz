@@ -110,6 +110,7 @@ void main() {
       expect(vehicle['start'], [-1.6458, 42.8125]);
       expect(jobs(mapped), hasLength(1));
       expect(mapped.stopIdsByJobId, {1: 'STOP-A'});
+      expect(mapped.hasExplicitEnd, isTrue);
     });
 
     test('keeps an open route when no end location is supplied', () {
@@ -119,6 +120,7 @@ void main() {
       final vehicle = vehicles.single as Map<String, Object?>;
 
       expect(vehicle.containsKey('end'), isFalse);
+      expect(mapped.hasExplicitEnd, isFalse);
     });
 
     test('combines tasks at one stop and uses the highest priority', () {

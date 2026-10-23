@@ -6,10 +6,12 @@ class VroomMappedRequest {
   VroomMappedRequest({
     required this.payload,
     required Map<int, String> stopIdsByJobId,
+    this.hasExplicitEnd = false,
   }) : stopIdsByJobId = Map.unmodifiable(stopIdsByJobId);
 
   final Map<String, Object?> payload;
   final Map<int, String> stopIdsByJobId;
+  final bool hasExplicitEnd;
 }
 
 class VroomRequestMapper {
@@ -112,6 +114,7 @@ class VroomRequestMapper {
     }
 
     return VroomMappedRequest(
+      hasExplicitEnd: endLocation != null,
       payload: {
         'vehicles': [
           {

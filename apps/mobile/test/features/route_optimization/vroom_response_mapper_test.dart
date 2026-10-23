@@ -124,6 +124,97 @@ void main() {
       );
     });
 
+    test('includes the final leg without adding an operational stop', () {
+      final response = validResponse();
+      route(response)['duration'] = 451;
+      route(response)['distance'] = 3001;
+      steps(response).last['duration'] = 451;
+      steps(response).last['distance'] = 3001;
+      steps(response).last['arrival'] = 691;
+
+      final requestWithEnd = VroomMappedRequest(
+        payload: {},
+        stopIdsByJobId: {1: 'STOP-A', 2: 'STOP-B'},
+        hasExplicitEnd: true,
+      );
+
+      final candidate = mapper.map(
+        response: response,
+        mappedRequest: requestWithEnd,
+        calculationDuration: Duration.zero,
+      );
+
+      expect(candidate.stopOrder, ['STOP-A', 'STOP-B']);
+      expect(candidate.vehicleLegs, hasLength(3));
+
+      final lastLeg = candidate.vehicleLegs.last;
+      expect(lastLeg.fromStopId, 'STOP-B');
+      expect(lastLeg.toStopId, 'END_LOCATION');
+      expect(lastLeg.distanceMeters, 500);
+      expect(lastLeg.duration, const Duration(seconds: 100));
+
+      expect(candidate.metrics.distanceMeters, 3001);
+      expect(candidate.metrics.totalDuration, const Duration(seconds: 691));
+      expect(
+        candidate.vehicleLegs.fold<int>(
+          0,
+          (total, leg) => total + leg.distanceMeters,
+        ),
+        candidate.metrics.distanceMeters,
+      );
+    });
+
+    test('allows an explicit end at the final job with a zero final leg', () {
+      final candidate = mapper.map(
+        response: validResponse(),
+        mappedRequest: VroomMappedRequest(
+          payload: {},
+          stopIdsByJobId: {1: 'STOP-A', 2: 'STOP-B'},
+          hasExplicitEnd: true,
+        ),
+        calculationDuration: Duration.zero,
+      );
+
+      expect(candidate.stopOrder, hasLength(2));
+      expect(candidate.vehicleLegs, hasLength(3));
+      expect(candidate.vehicleLegs.last.distanceMeters, 0);
+      expect(candidate.vehicleLegs.last.duration, Duration.zero);
+    });
+
+    test('rejects additional final travel for an open route', () {
+      final response = validResponse();
+      route(response)['duration'] = 451;
+      steps(response).last['duration'] = 451;
+      steps(response).last['arrival'] = 691;
+
+      expectInvalid(response);
+    });
+
+    test('rejects explicit end metrics that decrease after the final job', () {
+      final response = validResponse();
+      route(response)['distance'] = 2000;
+      steps(response).last['distance'] = 2000;
+
+      expect(
+        () => mapper.map(
+          response: response,
+          mappedRequest: VroomMappedRequest(
+            payload: {},
+            stopIdsByJobId: {1: 'STOP-A', 2: 'STOP-B'},
+            hasExplicitEnd: true,
+          ),
+          calculationDuration: Duration.zero,
+        ),
+        throwsA(
+          isA<RouteOptimizationFailure>().having(
+            (failure) => failure.type,
+            'type',
+            RouteOptimizationFailureType.invalidResponse,
+          ),
+        ),
+      );
+    });
+
     test('includes departure delay in total duration', () {
       final response = validResponse();
 
