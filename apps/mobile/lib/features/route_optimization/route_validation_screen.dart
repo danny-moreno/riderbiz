@@ -4,17 +4,121 @@ import 'route_optimization_models.dart';
 import 'route_optimization_port.dart';
 import 'vroom_route_optimization_adapter.dart';
 
+import 'dart:async';
+
+import '../../data/local/riderbiz_database.dart' show RiderBizDatabase;
+import 'accepted_route_store.dart';
+
 class RouteValidationScreen extends StatefulWidget {
-  const RouteValidationScreen({super.key});
+  const RouteValidationScreen({super.key, this.database, this.adapter});
+
+  final RiderBizDatabase? database;
+  final RouteOptimizationPort? adapter;
 
   @override
   State<RouteValidationScreen> createState() => _RouteValidationScreenState();
 }
 
 class _RouteValidationScreenState extends State<RouteValidationScreen> {
-  final _adapter = VroomRouteOptimizationAdapter(
-    endpoint: Uri.parse('http://127.0.0.1:3000/'),
-  );
+  static const _routeId = 'ROUTE-TABLET-SYNTHETIC';
+
+  late final RiderBizDatabase _database;
+  late final AcceptedRouteStore _store;
+  late final RouteOptimizationPort _adapter;
+
+  AcceptedRouteSnapshot? _accepted;
+  bool _isLoading = true;
+  bool _isSaving = false;
+  bool _storageReady = false;
+  String? _storageError;
+
+  @override
+  void initState() {
+    super.initState();
+    _database = widget.database ?? RiderBizDatabase();
+    _store = AcceptedRouteStore(_database);
+    _adapter =
+        widget.adapter ??
+        VroomRouteOptimizationAdapter(
+          endpoint: Uri.parse('http://127.0.0.1:3000/'),
+        );
+    unawaited(_loadAccepted());
+  }
+
+  Future<void> _loadAccepted() async {
+    setState(() {
+      _isLoading = true;
+      _storageReady = false;
+      _storageError = null;
+    });
+
+    try {
+      final accepted = await _store.load(_routeId);
+      if (!mounted) return;
+
+      setState(() {
+        _accepted = accepted;
+        _storageReady = true;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _storageError =
+            'No se pudo recuperar la ruta guardada. Intenta cargarla de nuevo.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _acceptProposal() async {
+    final candidate = _candidate;
+    if (candidate == null ||
+        _isBusy ||
+        _isLoading ||
+        _isSaving ||
+        !_storageReady) {
+      return;
+    }
+
+    final acceptedAt = DateTime.now().toUtc();
+
+    setState(() {
+      _isSaving = true;
+      _storageError = null;
+    });
+
+    try {
+      await _store.save(
+        routeId: _routeId,
+        candidate: candidate,
+        acceptedAt: acceptedAt,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _accepted = AcceptedRouteSnapshot(
+          routeId: _routeId,
+          stopOrder: candidate.stopOrder,
+          metrics: candidate.metrics,
+          acceptedAt: acceptedAt,
+        );
+        _candidate = null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _storageError =
+            'No se pudo guardar la propuesta. No se confirmó su aceptación.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
 
   RouteOptimizationCancellationSignal? _signal;
   RouteCandidate? _candidate;
@@ -24,7 +128,7 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
   RouteOptimizationRequest _request() {
     return RouteOptimizationRequest(
       plan: RoutePlan(
-        id: 'ROUTE-TABLET-SYNTHETIC',
+        id: _routeId,
         currentOrder: ['STOP-A', 'STOP-B'],
         stops: [
           OperationalStop(
@@ -66,7 +170,7 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
   }
 
   Future<void> _calculate() async {
-    if (_isBusy) return;
+    if (_isBusy || _isLoading || _isSaving) return;
 
     final signal = RouteOptimizationCancellationSignal();
     _signal = signal;
@@ -112,12 +216,16 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
   @override
   void dispose() {
     _signal?.cancel();
+    if (widget.database == null) {
+      unawaited(_database.close());
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final candidate = _candidate;
+    final accepted = _accepted;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Prueba de ruta sintética')),
@@ -137,7 +245,7 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
           const Text('Orden inicial: STOP-A → STOP-B'),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: _isBusy ? null : _calculate,
+            onPressed: _isBusy || _isLoading || _isSaving ? null : _calculate,
             child: Text(_isBusy ? 'Calculando…' : 'Calcular propuesta'),
           ),
           if (_isBusy) ...[
@@ -148,6 +256,37 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
             const SizedBox(height: 24),
             Text(_error!, semanticsLabel: 'Error: $_error'),
           ],
+          if (_isLoading) ...[
+            const SizedBox(height: 16),
+            const Text('Cargando ruta aceptada…'),
+          ],
+          if (_storageError != null) ...[
+            const SizedBox(height: 16),
+            Text(_storageError!),
+            if (!_storageReady)
+              TextButton(
+                onPressed: _isLoading ? null : _loadAccepted,
+                child: const Text('Volver a cargar ruta guardada'),
+              ),
+          ],
+          if (accepted != null) ...[
+            const SizedBox(height: 24),
+            Text(
+              'Ruta aceptada y guardada',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 12),
+            Text('Orden aceptado: ${accepted.stopOrder.join(' → ')}'),
+            Text('Distancia aceptada: ${accepted.metrics.distanceMeters} m'),
+            Text(
+              'Total aceptado: ${accepted.metrics.totalDuration.inSeconds} s',
+            ),
+            Text('Aceptada: ${accepted.acceptedAt.toLocal()}'),
+            const Text(
+              'Esta ruta se conserva hasta que aceptes otra propuesta.',
+            ),
+          ],
+
           if (candidate != null) ...[
             const SizedBox(height: 24),
             Text(
@@ -163,7 +302,12 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
             const SizedBox(height: 16),
             const Text(
               'Estimaciones sin tráfico en tiempo real. '
-              'La propuesta no se guarda ni modifica el paquete local.',
+              'Solo se guarda al aceptar. No modifica el paquete local.',
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: _isSaving || !_storageReady ? null : _acceptProposal,
+              child: Text(_isSaving ? 'Guardando…' : 'Aceptar propuesta'),
             ),
           ],
         ],
