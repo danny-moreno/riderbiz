@@ -15,7 +15,10 @@ class VroomMappedRequest {
 class VroomRequestMapper {
   const VroomRequestMapper();
 
-  VroomMappedRequest map(RouteOptimizationRequest request) {
+  VroomMappedRequest map(
+    RouteOptimizationRequest request, {
+    RouteCoordinate? endLocation,
+  }) {
     const RouteOptimizationRequestValidator().validate(request);
 
     final pendingTasks = request.plan.pendingTasks;
@@ -118,6 +121,8 @@ class VroomRequestMapper {
               request.currentLocation.longitude,
               request.currentLocation.latitude,
             ],
+            if (endLocation != null)
+              'end': [endLocation.longitude, endLocation.latitude],
           },
         ],
         'jobs': jobs,

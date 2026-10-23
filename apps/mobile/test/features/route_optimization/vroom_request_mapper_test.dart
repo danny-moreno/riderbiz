@@ -97,6 +97,30 @@ void main() {
       expect(mapped.stopIdsByJobId, {1: 'STOP-A'});
     });
 
+    test('maps an explicit end location as longitude then latitude', () {
+      final mapped = mapper.map(
+        request(tasks: [task()]),
+        endLocation: const RouteCoordinate(latitude: 42.82, longitude: -1.63),
+      );
+
+      final vehicles = mapped.payload['vehicles'] as List;
+      final vehicle = vehicles.single as Map<String, Object?>;
+
+      expect(vehicle['end'], [-1.63, 42.82]);
+      expect(vehicle['start'], [-1.6458, 42.8125]);
+      expect(jobs(mapped), hasLength(1));
+      expect(mapped.stopIdsByJobId, {1: 'STOP-A'});
+    });
+
+    test('keeps an open route when no end location is supplied', () {
+      final mapped = mapper.map(request(tasks: [task()]));
+
+      final vehicles = mapped.payload['vehicles'] as List;
+      final vehicle = vehicles.single as Map<String, Object?>;
+
+      expect(vehicle.containsKey('end'), isFalse);
+    });
+
     test('combines tasks at one stop and uses the highest priority', () {
       final mapped = mapper.map(
         request(
