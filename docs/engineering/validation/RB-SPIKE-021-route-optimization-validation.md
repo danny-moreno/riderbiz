@@ -462,12 +462,64 @@ La suma coincide con la hora final devuelta por el motor.
 
 Este resultado valida un escenario sintético pequeño. No demuestra todavía el comportamiento con ventanas superpuestas, varias tareas por portal o cargas de 60–120 tareas con restricciones horarias.
 
+### 18.5 Destino final explícito
+
+Validación realizada el 2026-10-23 con dos tareas y retorno explícito al origen como escenario de prueba.
+
+El destino final no se añadió al orden de tareas. La propuesta incluyó dos paradas operativas y tres tramos vehiculares.
+
+Resultados:
+
+- Último tramo: 1.077 m y 182 s.
+- Distancia total: 3.578 m.
+- Conducción: 533 s.
+- Servicio: 240 s.
+- Duración total: 773 s.
+
+El retorno al origen no se establece como regla general del producto.
+
+### 18.6 Conservación de posiciones bloqueadas
+
+Validación realizada el 2026-10-23 con 60 tareas sintéticas.
+
+La estrategia divide el orden pendiente en tramos delimitados por paradas bloqueadas. Reordena únicamente las paradas de cada tramo, sin moverlas al otro lado de un bloqueo.
+
+Las posiciones bloqueadas fueron 1, 20, 21 y 60, equivalentes a los índices 0, 19, 20 y 59.
+
+Se utilizaron:
+
+- VROOM para optimizar tramos con tareas intermedias.
+- Un destino explícito para llegar a la siguiente parada bloqueada.
+- OSRM directo para un bloqueo inicial o bloqueos consecutivos.
+- Una validación final del orden combinado.
+
+Resultados:
+
+| Métrica | Resultado |
+|---|---:|
+| Tareas y paradas propuestas | 60 |
+| Posiciones bloqueadas conservadas | 4 |
+| Tramos vehiculares | 60 |
+| Distancia estimada | 9.310 m |
+| Conducción | 1.642,1 s |
+| Servicio | 8.640 s |
+| Duración total | 10.282,1 s |
+| Tiempo de cálculo observado | 72,286 ms |
+
+La prueba verificó continuidad de los tramos, servicio contado una sola vez y conservación del plan original.
+
+El coordinador utiliza un presupuesto de tiempo compartido entre solicitudes y comprueba la cancelación entre tramos. Estas condiciones cuentan con comprobaciones parciales; su validación exhaustiva sigue pendiente.
+
+Esta estrategia conserva también la pertenencia de cada parada a su tramo, una restricción adicional a fijar solamente la posición del bloqueo. Limita la búsqueda y no garantiza el óptimo global.
+
+La estrategia segmentada rechaza ventanas horarias y grupos peatonales. El adaptador VROOM básico sigue rechazando bloqueos; estos se gestionan mediante el coordinador específico.
+
 ## 19. Pruebas automatizadas
 
 Estado de la suite habitual al registrar esta fase:
 
-- 167 pruebas superadas.
-- Once pruebas locales omitidas por defecto.
+- 211 pruebas superadas.
+- Trece pruebas locales omitidas por defecto.
 - Análisis estático sin incidencias.
 
 Las pruebas locales se ejecutaron explícitamente:
@@ -478,6 +530,8 @@ Las pruebas locales se ejecutaron explícitamente:
 - Cinco solicitudes por volumen: 15 optimizaciones reales completadas.
 - Tres pruebas de ventanas horarias: superadas; caso viable de una parada, caso imposible y tres paradas con ventanas sucesivas.
 - Una prueba de reoptimización de tareas pendientes: superada.
+- Una prueba de destino final explícito: superada.
+- Una prueba de 60 tareas con cuatro posiciones bloqueadas: superada.
 
 Activación:
 
@@ -530,12 +584,20 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `8ca1b77` | Distinción entre propuesta incompleta y respuesta inválida |
 | `47c213c` | Reoptimización real de 60 tareas pendientes tras completar 20 de 80 |
 | `378f4d1` | Verificación individual de ventanas horarias en tres paradas |
+| `f0786ba` | Destino explícito en solicitudes VROOM |
+| `bdf6046` | Conversión del tramo hasta el destino final |
+| `b655f6f` | Destino final verificado contra VROOM real |
+| `a391825` | Destino explícito en el adaptador HTTP |
+| `6cec8a0` | División y validación de tramos entre bloqueos |
+| `a18767e` | Cliente OSRM de desplazamientos directos |
+| `edabc7b` | Coordinación de optimización por tramos |
+| `6bc8584` | Conservación de cuatro bloqueos con motores reales |
 
 ## 22. Validaciones pendientes
 
 - Comparación con órdenes habituales representativos de repartidores; la comparación con el orden inicial sintético ya está completada.
 - Priorización bajo restricciones.
-- Conservación de paradas bloqueadas en el motor real.
+- Ampliación de bloqueos a escenarios combinados, fallos entre tramos y verificación exhaustiva del presupuesto temporal; el caso básico de 60 tareas con cuatro bloqueos ya está comprobado.
 - Reoptimización con ventanas horarias, bloqueos y grupos peatonales; el caso vehicular básico con tareas completadas ya está comprobado.
 - Recorridos peatonales y separación de tramos.
 - Control del ajuste de coordenadas a la red.
@@ -578,3 +640,4 @@ La Issue #21 permanece abierta.
 - Versión 0.5 (2026-10-23): resultado específico `incompleteSolution` para propuestas con tareas sin asignar.
 - Versión 0.6 (2026-10-23): reoptimización vehicular de tareas pendientes y actualización a diez pruebas locales omitidas por defecto.
 - Versión 0.7 (2026-10-23): ventanas sucesivas en tres paradas y actualización a once pruebas locales omitidas por defecto.
+- Versión 0.8 (2026-10-23): destino explícito, coordinación por tramos y conservación de posiciones bloqueadas; 211 pruebas superadas y trece locales omitidas por defecto.
