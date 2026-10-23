@@ -408,12 +408,39 @@ Ambos casos pasaron. No se ha validado todavía el cumplimiento independiente de
 
 Desde el 2026-10-23, cada caso obtiene una única respuesta de VROOM y utiliza esa misma respuesta para verificar el horario y convertir las métricas. La prueba ya no depende de comparar dos solicitudes independientes.
 
+### 18.3 Reoptimización de tareas pendientes
+
+Validación realizada el 2026-10-23 contra VROOM y OSRM locales.
+
+Se utilizó un escenario de 80 tareas sintéticas, con 20 completadas y 60 pendientes. La ubicación inicial del cálculo se situó en el punto sintético de la última tarea completada.
+
+Resultados:
+
+| Métrica | Resultado |
+|---|---:|
+| Tareas totales | 80 |
+| Tareas completadas | 20 |
+| Tareas pendientes | 60 |
+| Paradas propuestas | 60 |
+| Paradas completadas reintroducidas | 0 |
+| Distancia estimada | 7.682 m |
+| Conducción | 1.326 s |
+| Servicio | 8.640 s |
+| Espera | 0 s |
+| Retraso de salida | 0 s |
+| Duración total | 9.966 s |
+
+La prueba comprobó que todas las paradas pendientes aparecían exactamente una vez y que el cálculo no modificaba el orden ni los estados del plan original.
+
+El escenario no incluye ventanas horarias, bloqueos ni grupos peatonales. El cambio de estados se preparó como dato de prueba; no valida todavía el flujo completo de confirmación de entregas ni su persistencia.
+
+
 ## 19. Pruebas automatizadas
 
 Estado de la suite habitual al registrar esta fase:
 
 - 167 pruebas superadas.
-- Nueve pruebas locales omitidas por defecto.
+- Diez pruebas locales omitidas por defecto.
 - Análisis estático sin incidencias.
 
 Las pruebas locales se ejecutaron explícitamente:
@@ -423,6 +450,7 @@ Las pruebas locales se ejecutaron explícitamente:
 - Tres pruebas de volumen: superadas.
 - Cinco solicitudes por volumen: 15 optimizaciones reales completadas.
 - Dos pruebas de ventanas horarias: superadas; caso viable y caso imposible.
+- Una prueba de reoptimización de tareas pendientes: superada.
 
 Activación:
 
@@ -473,6 +501,7 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `44b9561` | Inclusión del retraso de salida y comprobación del horario total |
 | `94b52ea` | Verificación y conversión del horario sobre una única respuesta |
 | `8ca1b77` | Distinción entre propuesta incompleta y respuesta inválida |
+| `47c213c` | Reoptimización real de 60 tareas pendientes tras completar 20 de 80 |
 
 ## 22. Validaciones pendientes
 
@@ -480,7 +509,7 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 - Ventanas horarias de múltiples paradas, con verificación independiente de cada inicio de servicio; los dos casos básicos de una parada ya están comprobados.
 - Priorización bajo restricciones.
 - Conservación de paradas bloqueadas en el motor real.
-- Reoptimización real después de completar tareas.
+- Reoptimización con ventanas horarias, bloqueos y grupos peatonales; el caso vehicular básico con tareas completadas ya está comprobado.
 - Recorridos peatonales y separación de tramos.
 - Control del ajuste de coordenadas a la red.
 - Escenarios geográficos y operativos más representativos.
@@ -519,3 +548,4 @@ La Issue #21 permanece abierta.
 - Versión 0.3 (2026-10-22): ventanas horarias básicas, corrección del retraso de salida y actualización a 167 pruebas superadas y nueve locales omitidas.
 - Versión 0.4 (2026-10-23): pruebas de ventanas horarias sobre una única respuesta del motor.
 - Versión 0.5 (2026-10-23): resultado específico `incompleteSolution` para propuestas con tareas sin asignar.
+- Versión 0.6 (2026-10-23): reoptimización vehicular de tareas pendientes y actualización a diez pruebas locales omitidas por defecto.
