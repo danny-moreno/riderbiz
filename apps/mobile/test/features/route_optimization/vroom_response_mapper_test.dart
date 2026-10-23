@@ -196,13 +196,26 @@ void main() {
       );
     });
 
-    test('rejects unassigned jobs', () {
+    test('reports an incomplete solution when jobs remain unassigned', () {
       final response = validResponse();
       response['unassigned'] = [
         {'id': 2},
       ];
 
-      expectInvalid(response);
+      expect(
+        () => mapper.map(
+          response: response,
+          mappedRequest: mappedRequest,
+          calculationDuration: Duration.zero,
+        ),
+        throwsA(
+          isA<RouteOptimizationFailure>().having(
+            (failure) => failure.type,
+            'type',
+            RouteOptimizationFailureType.incompleteSolution,
+          ),
+        ),
+      );
     });
 
     test('rejects an unexpected vehicle', () {

@@ -166,7 +166,7 @@ void main() {
             isA<RouteOptimizationFailure>().having(
               (failure) => failure.type,
               'type',
-              RouteOptimizationFailureType.invalidResponse,
+              RouteOptimizationFailureType.incompleteSolution,
             ),
           ),
         );

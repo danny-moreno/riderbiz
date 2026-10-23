@@ -20,7 +20,10 @@ class VroomResponseMapper {
     final unassigned = _list(response['unassigned'], 'unassigned');
 
     if (unassigned.isNotEmpty) {
-      _reject('VROOM left tasks unassigned.');
+      throw const RouteOptimizationFailure(
+        type: RouteOptimizationFailureType.incompleteSolution,
+        message: 'VROOM returned a solution with unassigned tasks.',
+      );
     }
 
     final routes = _list(response['routes'], 'routes');

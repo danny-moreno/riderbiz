@@ -6,6 +6,7 @@ enum RouteOptimizationFailureType {
   cancelled,
   invalidRequest,
   invalidResponse,
+  incompleteSolution,
   providerError,
 }
 
