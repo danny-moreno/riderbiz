@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riderbiz_mobile/features/route_optimization/route_optimization_models.dart';
 import 'package:riderbiz_mobile/features/route_optimization/route_optimization_port.dart';
+import 'package:riderbiz_mobile/features/route_optimization/vroom_response_mapper.dart';
 import 'package:riderbiz_mobile/features/route_optimization/vroom_request_mapper.dart';
-import 'package:riderbiz_mobile/features/route_optimization/vroom_route_optimization_adapter.dart';
 
 void main() {
   const enabled = bool.fromEnvironment('RUN_LOCAL_VROOM');
@@ -105,9 +105,11 @@ void main() {
         expect(serviceStart, inInclusiveRange(3600, 7200));
         expect(waiting, greaterThanOrEqualTo(0));
 
-        final candidate = await VroomRouteOptimizationAdapter(
-          endpoint: endpoint,
-        ).optimize(input);
+        final candidate = const VroomResponseMapper().map(
+          response: response,
+          mappedRequest: const VroomRequestMapper().map(input),
+          calculationDuration: Duration.zero,
+        );
 
         expect(candidate.stopOrder, ['STOP-A']);
         expect(candidate.metrics.serviceDuration, const Duration(seconds: 120));
@@ -154,8 +156,12 @@ void main() {
         expect(unassigned, hasLength(1));
         expect((unassigned.single as Map)['id'], 1);
 
-        await expectLater(
-          VroomRouteOptimizationAdapter(endpoint: endpoint).optimize(input),
+        expect(
+          () => const VroomResponseMapper().map(
+            response: response,
+            mappedRequest: const VroomRequestMapper().map(input),
+            calculationDuration: Duration.zero,
+          ),
           throwsA(
             isA<RouteOptimizationFailure>().having(
               (failure) => failure.type,
