@@ -321,6 +321,28 @@ void main() {
       expect(osrm.connections, ['B->C']);
     });
 
+    test('passes only the remaining time budget to the next segment', () async {
+      vroom.responseDelay = const Duration(milliseconds: 50);
+      final input = request(locked: {'C'}, timeout: const Duration(seconds: 5));
+
+      final result = await adapter.optimize(input);
+
+      expect(vroom.requests, hasLength(2));
+      expect(osrm.connections, isEmpty);
+      expectContinuous(result);
+
+      final firstBudget = vroom.requests.first.timeout;
+      final secondBudget = vroom.requests.last.timeout;
+
+      expect(firstBudget, greaterThan(Duration.zero));
+      expect(firstBudget, lessThanOrEqualTo(input.timeout));
+      expect(secondBudget, greaterThan(Duration.zero));
+      expect(
+        secondBudget,
+        lessThanOrEqualTo(firstBudget - vroom.responseDelay),
+      );
+    });
+
     test('stops when a segment exhausts the total time budget', () async {
       vroom.responseDelay = const Duration(milliseconds: 50);
 
