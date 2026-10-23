@@ -540,13 +540,29 @@ También se comprobó manualmente la conservación del estado del paquete tras c
 
 La ubicación informó una precisión estimada de 100 m. El código puede utilizar la última posición conocida sin verificar su antigüedad; esta comprobación no valida una posición actual ni precisión suficiente para identificar un portal.
 
-Esta prueba no valida todavía el funcionamiento sin cable, la aceptación y persistencia de una ruta ni una jornada real de reparto.
+Esta primera prueba se limitó al cálculo mediante USB. La aceptación, persistencia y recuperación ante desconexión se documentan en la sección 18.8. El funcionamiento sin cable y una jornada real de reparto siguen pendientes.
+
+### 18.8 Aceptación, persistencia y recuperación ante desconexión
+
+Validación realizada el 2026-10-24 en la Samsung SM-X210.
+
+Se calculó una propuesta sintética y se guardó mediante «Aceptar propuesta». Tras cerrar la aplicación desde las aplicaciones recientes y abrirla desde su icono, la pantalla recuperó el orden STOP-A → STOP-B, la distancia de 2.501 m y la duración total de 591 s sin solicitar otro cálculo.
+
+El almacenamiento utiliza la tabla AcceptedRouteSnapshots de Drift, incorporada en el esquema 4. Conserva el orden, las métricas y la fecha de aceptación; no contiene geometría ni permite navegación.
+
+Las pruebas automatizadas comprobaron las migraciones 1→4, 2→4 y 3→4, la conservación de datos anteriores y las operaciones del servicio de almacenamiento. Una prueba de pantalla verificó que calcular no sustituye la ruta aceptada y que la sustitución requiere aceptación explícita.
+
+Para comprobar un fallo de conexión, se cerró la aplicación y se retiró el túnel USB del puerto 3000. Al volver a abrirla e intentar calcular, apareció el mensaje de conexión no disponible y la ruta aceptada permaneció visible.
+
+Tras restablecer el túnel, se obtuvo nuevamente una propuesta.
+
+Esta evidencia no valida todavía interrupciones durante una respuesta, fallos de escritura, recuperación tras cierre inesperado durante el guardado ni una jornada de reparto.
 
 ## 19. Pruebas automatizadas
 
 Estado de la suite habitual al registrar esta fase:
 
-- 215 pruebas superadas.
+- 223 pruebas superadas.
 - Trece pruebas locales omitidas por defecto.
 - Análisis estático sin incidencias.
 
@@ -624,6 +640,9 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `af90312` | Rechazo de resultados recibidos después del presupuesto total |
 | `fefe6c4` | Presupuesto restante transferido al siguiente tramo |
 | `9311017` | Pantalla de rutas sintéticas comprobada en tablet física |
+| `52b347e` | Esquema 4 y migraciones para almacenar rutas aceptadas |
+| `aae831d` | Servicio de almacenamiento del orden y las métricas aceptadas |
+| `d073b27` | Aceptación y recuperación desde la pantalla de validación |
 
 ## 22. Validaciones pendientes
 
@@ -639,7 +658,7 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 - Costes proyectados por repartidor y mes.
 - Medición de recursos de infraestructura.
 - Persistencia y eliminación de información temporal.
-- Ampliación de pruebas físicas a aceptación y persistencia de rutas, fallos de conexión y uso en campo; el cálculo sintético mediante USB ya está comprobado en una Samsung SM-X210.
+- Ampliación de pruebas físicas a interrupciones durante solicitudes, fallos de guardado y uso en campo; cálculo, aceptación, recuperación tras cierre y desconexión entre solicitudes ya están comprobados en la Samsung SM-X210 mediante USB.
 - Evaluación de una versión estable del motor para producción.
 - Ampliación de ventanas horarias a escenarios superpuestos, varias tareas por portal y volúmenes de 60–120 tareas; los casos básicos y el escenario de tres paradas ya están comprobados.
 
@@ -675,3 +694,4 @@ La Issue #21 permanece abierta.
 - Versión 0.8 (2026-10-23): destino explícito, coordinación por tramos y conservación de posiciones bloqueadas; 211 pruebas superadas y trece locales omitidas por defecto.
 - Versión 0.9 (2026-10-23): fallos de clientes y rechazo de resultados fuera de plazo; 214 pruebas superadas y trece locales omitidas por defecto.
 - Versión 0.10 (2026-10-24): cálculo sintético desde tablet física y comprobación del presupuesto restante entre tramos; 215 pruebas superadas y trece locales omitidas por defecto.
+- Versión 0.11 (2026-10-24): aceptación y persistencia de rutas, migraciones al esquema 4 y conservación de la ruta ante desconexión; 223 pruebas superadas y trece locales omitidas por defecto.
