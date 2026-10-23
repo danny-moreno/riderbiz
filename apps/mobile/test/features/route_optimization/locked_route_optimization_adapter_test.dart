@@ -12,6 +12,7 @@ class TestVroomAdapter extends VroomRouteOptimizationAdapter {
   final destinations = <RouteCoordinate?>[];
   RouteOptimizationCancellationSignal? cancelAfterCall;
   RouteOptimizationFailure? failureToThrow;
+  Duration responseDelay = Duration.zero;
 
   @override
   Future<RouteCandidate> optimize(
@@ -22,6 +23,9 @@ class TestVroomAdapter extends VroomRouteOptimizationAdapter {
     cancellationSignal?.throwIfCancelled();
     requests.add(request);
     destinations.add(endLocation);
+    if (responseDelay > Duration.zero) {
+      await Future<void>.delayed(responseDelay);
+    }
     final configuredFailure = failureToThrow;
     if (configuredFailure != null) {
       throw configuredFailure;
@@ -119,6 +123,7 @@ void main() {
     Set<String> locked = const {},
     Set<String> completed = const {},
     bool withWindow = false,
+    Duration timeout = const Duration(seconds: 5),
   }) {
     final departure = DateTime.utc(2026, 10, 23, 8);
     const ids = ['A', 'B', 'C', 'D', 'E'];
@@ -161,7 +166,7 @@ void main() {
       ),
       currentLocation: const RouteCoordinate(latitude: 42.80, longitude: -1.64),
       departureAt: departure,
-      timeout: const Duration(seconds: 5),
+      timeout: timeout,
       reoptimizePendingOnly: true,
     );
   }
@@ -314,6 +319,20 @@ void main() {
       expect(vroom.requests, hasLength(1));
       expect(vroom.requests.single.plan.currentOrder, ['A']);
       expect(osrm.connections, ['B->C']);
+    });
+
+    test('stops when a segment exhausts the total time budget', () async {
+      vroom.responseDelay = const Duration(milliseconds: 50);
+
+      await expectLater(
+        adapter.optimize(
+          request(locked: {'C'}, timeout: const Duration(milliseconds: 20)),
+        ),
+        failure(RouteOptimizationFailureType.timeout),
+      );
+
+      expect(vroom.requests, hasLength(1));
+      expect(osrm.connections, isEmpty);
     });
 
     test('stops between segments when cancellation is requested', () async {
