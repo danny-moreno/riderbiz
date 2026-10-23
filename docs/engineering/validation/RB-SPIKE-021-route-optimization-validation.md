@@ -406,7 +406,7 @@ Actualmente ese rechazo utiliza `invalidResponse`. Queda pendiente distinguir un
 
 Ambos casos pasaron. No se ha validado todavía el cumplimiento independiente de todas las ventanas en rutas de múltiples paradas.
 
-La prueba viable compara el horario de una respuesta directa con otra solicitud independiente del adaptador. Funcionó en este escenario, pero deberá mejorarse para verificar una única respuesta sin depender de la repetibilidad del motor.
+Desde el 2026-10-23, cada caso obtiene una única respuesta de VROOM y utiliza esa misma respuesta para verificar el horario y convertir las métricas. La prueba ya no depende de comparar dos solicitudes independientes.
 
 ## 19. Pruebas automatizadas
 
@@ -471,6 +471,7 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `79dee7d` | Comparación real con el orden inicial sintético |
 | `c6f44a4` | Validación real de ventanas horarias |
 | `44b9561` | Inclusión del retraso de salida y comprobación del horario total |
+| `94b52ea` | Verificación y conversión del horario sobre una única respuesta |
 
 ## 22. Validaciones pendientes
 
@@ -515,3 +516,4 @@ La Issue #21 permanece abierta.
 - Versión 0.1 (2026-10-18): evidencia parcial del dominio neutral, validaciones, integración local y benchmarks vehiculares de 60, 80 y 120 tareas.
 - Versión 0.2 (2026-10-19): evaluador OSRM, comparación con el orden inicial sintético y actualización del estado de pruebas.
 - Versión 0.3 (2026-10-22): ventanas horarias básicas, corrección del retraso de salida y actualización a 167 pruebas superadas y nueve locales omitidas.
+- Versión 0.4 (2026-10-23): pruebas de ventanas horarias sobre una única respuesta del motor.
