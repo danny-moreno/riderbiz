@@ -402,7 +402,7 @@ Caso imposible:
 - El motor dejó la tarea sin asignar.
 - El adaptador rechazó la propuesta incompleta.
 
-Actualmente ese rechazo utiliza `invalidResponse`. Queda pendiente distinguir una solución inviable de una respuesta mal formada mediante un resultado específico.
+Las propuestas con tareas sin asignar se rechazan mediante `incompleteSolution`. Las respuestas mal formadas conservan `invalidResponse`. Una propuesta incompleta no demuestra que el problema sea matemáticamente inviable.
 
 Ambos casos pasaron. No se ha validado todavía el cumplimiento independiente de todas las ventanas en rutas de múltiples paradas.
 
@@ -472,6 +472,7 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `c6f44a4` | Validación real de ventanas horarias |
 | `44b9561` | Inclusión del retraso de salida y comprobación del horario total |
 | `94b52ea` | Verificación y conversión del horario sobre una única respuesta |
+| `8ca1b77` | Distinción entre propuesta incompleta y respuesta inválida |
 
 ## 22. Validaciones pendientes
 
@@ -517,3 +518,4 @@ La Issue #21 permanece abierta.
 - Versión 0.2 (2026-10-19): evaluador OSRM, comparación con el orden inicial sintético y actualización del estado de pruebas.
 - Versión 0.3 (2026-10-22): ventanas horarias básicas, corrección del retraso de salida y actualización a 167 pruebas superadas y nueve locales omitidas.
 - Versión 0.4 (2026-10-23): pruebas de ventanas horarias sobre una única respuesta del motor.
+- Versión 0.5 (2026-10-23): resultado específico `incompleteSolution` para propuestas con tareas sin asignar.
