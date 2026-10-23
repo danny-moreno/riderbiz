@@ -508,7 +508,11 @@ Resultados:
 
 La prueba verificó continuidad de los tramos, servicio contado una sola vez y conservación del plan original.
 
-El coordinador utiliza un presupuesto de tiempo compartido entre solicitudes y comprueba la cancelación entre tramos. Estas condiciones cuentan con comprobaciones parciales; su validación exhaustiva sigue pendiente.
+El coordinador utiliza un presupuesto de tiempo compartido entre solicitudes y comprueba la cancelación entre tramos.
+
+Las pruebas con clientes simulados comprobaron que un fallo de VROOM o de OSRM se propaga sin solicitar los tramos siguientes. También comprobaron que un resultado recibido después de agotar el presupuesto total se rechaza mediante `timeout`.
+
+Esta última prueba verifica el rechazo posterior a la respuesta, no una interrupción inmediata al vencer el plazo. Sigue pendiente ampliar la comprobación del presupuesto compartido y de la cancelación durante solicitudes en curso.
 
 Esta estrategia conserva también la pertenencia de cada parada a su tramo, una restricción adicional a fijar solamente la posición del bloqueo. Limita la búsqueda y no garantiza el óptimo global.
 
@@ -518,7 +522,7 @@ La estrategia segmentada rechaza ventanas horarias y grupos peatonales. El adapt
 
 Estado de la suite habitual al registrar esta fase:
 
-- 211 pruebas superadas.
+- 214 pruebas superadas.
 - Trece pruebas locales omitidas por defecto.
 - Análisis estático sin incidencias.
 
@@ -592,6 +596,8 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `a18767e` | Cliente OSRM de desplazamientos directos |
 | `edabc7b` | Coordinación de optimización por tramos |
 | `6bc8584` | Conservación de cuatro bloqueos con motores reales |
+| `c495f00` | Interrupción de la coordinación ante fallos de VROOM y OSRM |
+| `af90312` | Rechazo de resultados recibidos después del presupuesto total |
 
 ## 22. Validaciones pendientes
 
@@ -641,3 +647,4 @@ La Issue #21 permanece abierta.
 - Versión 0.6 (2026-10-23): reoptimización vehicular de tareas pendientes y actualización a diez pruebas locales omitidas por defecto.
 - Versión 0.7 (2026-10-23): ventanas sucesivas en tres paradas y actualización a once pruebas locales omitidas por defecto.
 - Versión 0.8 (2026-10-23): destino explícito, coordinación por tramos y conservación de posiciones bloqueadas; 211 pruebas superadas y trece locales omitidas por defecto.
+- Versión 0.9 (2026-10-23): fallos de clientes y rechazo de resultados fuera de plazo; 214 pruebas superadas y trece locales omitidas por defecto.
