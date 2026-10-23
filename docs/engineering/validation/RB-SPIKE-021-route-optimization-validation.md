@@ -512,17 +512,41 @@ El coordinador utiliza un presupuesto de tiempo compartido entre solicitudes y c
 
 Las pruebas con clientes simulados comprobaron que un fallo de VROOM o de OSRM se propaga sin solicitar los tramos siguientes. También comprobaron que un resultado recibido después de agotar el presupuesto total se rechaza mediante `timeout`.
 
-Esta última prueba verifica el rechazo posterior a la respuesta, no una interrupción inmediata al vencer el plazo. Sigue pendiente ampliar la comprobación del presupuesto compartido y de la cancelación durante solicitudes en curso.
+Esta última prueba verifica el rechazo posterior a la respuesta, no una interrupción inmediata al vencer el plazo. Una prueba adicional comprobó que el segundo tramo recibe un presupuesto reducido por el tiempo consumido en el primero. Sigue pendiente ampliar estos casos a OSRM y comprobar la cancelación durante solicitudes en curso.
 
 Esta estrategia conserva también la pertenencia de cada parada a su tramo, una restricción adicional a fijar solamente la posición del bloqueo. Limita la búsqueda y no garantiza el óptimo global.
 
 La estrategia segmentada rechaza ventanas horarias y grupos peatonales. El adaptador VROOM básico sigue rechazando bloqueos; estos se gestionan mediante el coordinador específico.
 
+### 18.7 Cálculo desde una tablet física
+
+Validación completada el 2026-10-24 en una Samsung SM-X210 con Android 16 (API 36).
+
+La pantalla de validación solicitó una propuesta para dos entregas sintéticas en Pamplona. Se utilizó una conexión USB con redirección de los puertos 3000 y 5000 hacia VROOM y OSRM en el Mac. Los servicios permanecieron publicados únicamente en 127.0.0.1 del Mac.
+
+Resultados mostrados en el dispositivo:
+
+| Métrica | Resultado |
+|---|---:|
+| Orden propuesto | STOP-A → STOP-B |
+| Distancia | 2.501 m |
+| Conducción | 351 s |
+| Servicio | 240 s |
+| Duración total | 591 s |
+
+Se comprobó el flujo desde la interfaz hasta el motor local y la presentación del resultado en la tablet. La propuesta no se guarda, no modifica el paquete local y no utiliza la ubicación del dispositivo.
+
+También se comprobó manualmente la conservación del estado del paquete tras cerrar y abrir la aplicación, la lectura de un QR sintético y el acceso al servicio de ubicación.
+
+La ubicación informó una precisión estimada de 100 m. El código puede utilizar la última posición conocida sin verificar su antigüedad; esta comprobación no valida una posición actual ni precisión suficiente para identificar un portal.
+
+Esta prueba no valida todavía el funcionamiento sin cable, la aceptación y persistencia de una ruta ni una jornada real de reparto.
+
 ## 19. Pruebas automatizadas
 
 Estado de la suite habitual al registrar esta fase:
 
-- 214 pruebas superadas.
+- 215 pruebas superadas.
 - Trece pruebas locales omitidas por defecto.
 - Análisis estático sin incidencias.
 
@@ -598,6 +622,8 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `6bc8584` | Conservación de cuatro bloqueos con motores reales |
 | `c495f00` | Interrupción de la coordinación ante fallos de VROOM y OSRM |
 | `af90312` | Rechazo de resultados recibidos después del presupuesto total |
+| `fefe6c4` | Presupuesto restante transferido al siguiente tramo |
+| `9311017` | Pantalla de rutas sintéticas comprobada en tablet física |
 
 ## 22. Validaciones pendientes
 
@@ -613,7 +639,7 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 - Costes proyectados por repartidor y mes.
 - Medición de recursos de infraestructura.
 - Persistencia y eliminación de información temporal.
-- Ejecución pertinente en dispositivos físicos.
+- Ampliación de pruebas físicas a aceptación y persistencia de rutas, fallos de conexión y uso en campo; el cálculo sintético mediante USB ya está comprobado en una Samsung SM-X210.
 - Evaluación de una versión estable del motor para producción.
 - Ampliación de ventanas horarias a escenarios superpuestos, varias tareas por portal y volúmenes de 60–120 tareas; los casos básicos y el escenario de tres paradas ya están comprobados.
 
@@ -648,3 +674,4 @@ La Issue #21 permanece abierta.
 - Versión 0.7 (2026-10-23): ventanas sucesivas en tres paradas y actualización a once pruebas locales omitidas por defecto.
 - Versión 0.8 (2026-10-23): destino explícito, coordinación por tramos y conservación de posiciones bloqueadas; 211 pruebas superadas y trece locales omitidas por defecto.
 - Versión 0.9 (2026-10-23): fallos de clientes y rechazo de resultados fuera de plazo; 214 pruebas superadas y trece locales omitidas por defecto.
+- Versión 0.10 (2026-10-24): cálculo sintético desde tablet física y comprobación del presupuesto restante entre tramos; 215 pruebas superadas y trece locales omitidas por defecto.
