@@ -863,3 +863,23 @@ Resultados:
 Alcance: cierre de la conexión contra un servidor local de prueba. No demuestra la interrupción del trabajo interno de VROOM ni instrumenta la cancelación desde la navegación de la aplicación.
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
+
+## 30. Cancelación al salir y respuesta tardía
+
+Una prueba automatizada de pantalla mantiene pendiente el resultado de un adaptador de prueba y sale mediante navegación atrás durante el cálculo.
+
+Se comprueba que:
+- La señal de cancelación pasa de inactiva a activa al salir.
+- Una respuesta completada después de salir no genera excepciones de Flutter.
+- La ruta guardada conserva su orden, distancia y fecha de aceptación.
+- Al reabrir la pantalla se recupera la ruta aceptada, no aparece la propuesta tardía y el botón de cálculo está disponible.
+- Reabrir la pantalla no inicia otra optimización automáticamente.
+
+Resultados:
+- Prueba específica superada.
+- Análisis estático sin incidencias.
+- Suite habitual: 235 pruebas superadas y 13 pruebas locales omitidas por defecto.
+
+Alcance: navegación y ciclo de vida de la pantalla con un adaptador de prueba. La sección 29 comprueba por separado el cierre HTTP al cancelar. No constituye una prueba integrada de navegación con HTTP real ni demuestra la interrupción del trabajo interno de VROOM.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
