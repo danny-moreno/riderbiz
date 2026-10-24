@@ -9,6 +9,7 @@ import 'dart:async';
 
 import '../../data/local/riderbiz_database.dart' show RiderBizDatabase;
 import 'accepted_route_store.dart';
+import 'route_plan_store.dart';
 
 class RouteValidationScreen extends StatefulWidget {
   const RouteValidationScreen({
@@ -68,6 +69,7 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
     try {
       final accepted = await _store.load(_routeId);
       await _deliveries.prepare();
+      await _deliveries.ensureRoutePlan();
       final progress = await _deliveries.loadProgress();
       if (!mounted) return;
 
@@ -187,42 +189,19 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
   String? _error;
   bool _isBusy = false;
 
-  RouteOptimizationRequest _request() {
+  Future<RouteOptimizationRequest> _request() async {
+    final plan = await RoutePlanStore(_database).load(_routeId);
+    if (plan == null) {
+      throw StateError('The synthetic route definition is missing.');
+    }
+
     return RouteOptimizationRequest(
       plan: RoutePlan(
-        id: _routeId,
-        currentOrder: ['STOP-A', 'STOP-B'],
-        stops: [
-          OperationalStop(
-            id: 'STOP-A',
-            coordinate: const RouteCoordinate(
-              latitude: 42.8100,
-              longitude: -1.6400,
-            ),
-            taskIds: ['TASK-A'],
-          ),
-          OperationalStop(
-            id: 'STOP-B',
-            coordinate: const RouteCoordinate(
-              latitude: 42.8150,
-              longitude: -1.6350,
-            ),
-            taskIds: ['TASK-B'],
-          ),
-        ],
-        tasks: [
-          for (final id in ['A', 'B'])
-            RouteTask(
-              id: 'TASK-$id',
-              stopId: 'STOP-$id',
-              type: RouteTaskType.delivery,
-              status: _deliveryStatuses['STOP-$id'] == 'delivered'
-                  ? RouteTaskStatus.completed
-                  : RouteTaskStatus.pending,
-              priority: RoutePriority.normal,
-              serviceDuration: const Duration(seconds: 120),
-            ),
-        ],
+        id: plan.id,
+        currentOrder: _accepted?.stopOrder ?? plan.currentOrder,
+        stops: plan.stops,
+        tasks: plan.tasks,
+        walkingClusters: plan.walkingClusters,
       ),
       currentLocation: const RouteCoordinate(
         latitude: 42.8125,
@@ -259,8 +238,11 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
     });
 
     try {
+      final request = await _request();
+      if (!mounted) return;
+      signal.throwIfCancelled();
       final candidate = await _adapter.optimize(
-        _request(),
+        request,
         cancellationSignal: signal,
       );
 

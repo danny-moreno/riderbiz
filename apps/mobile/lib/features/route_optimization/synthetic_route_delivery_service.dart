@@ -4,6 +4,8 @@ import '../../data/local/riderbiz_database.dart';
 import '../delivery_accounting/delivery_accounting_service.dart';
 import '../operator_settings/operator_tariff_service.dart';
 import 'accepted_route_store.dart' show AcceptedRouteStore;
+import 'route_plan_store.dart';
+import 'route_optimization_models.dart';
 
 class SyntheticRouteDeliveryService {
   const SyntheticRouteDeliveryService(this.database);
@@ -77,6 +79,50 @@ class SyntheticRouteDeliveryService {
               ),
             );
       }
+    });
+  }
+
+  Future<void> ensureRoutePlan() {
+    return database.transaction(() async {
+      final store = RoutePlanStore(database);
+      final existing = await store.load(routeId);
+      if (existing != null) return;
+
+      await store.save(
+        deliveryRunId: _runId,
+        plan: RoutePlan(
+          id: routeId,
+          currentOrder: const ['STOP-A', 'STOP-B'],
+          stops: [
+            for (final entry in packageIdsByStop.entries)
+              OperationalStop(
+                id: entry.key,
+                coordinate: entry.key == 'STOP-A'
+                    ? const RouteCoordinate(
+                        latitude: 42.8100,
+                        longitude: -1.6400,
+                      )
+                    : const RouteCoordinate(
+                        latitude: 42.8150,
+                        longitude: -1.6350,
+                      ),
+                taskIds: [entry.value],
+              ),
+          ],
+          tasks: [
+            for (final entry in packageIdsByStop.entries)
+              RouteTask(
+                id: entry.value,
+                stopId: entry.key,
+                type: RouteTaskType.delivery,
+                status: RouteTaskStatus.pending,
+                priority: RoutePriority.normal,
+                serviceDuration: const Duration(seconds: 120),
+              ),
+          ],
+        ),
+        updatedAt: DateTime.now().toUtc(),
+      );
     });
   }
 
