@@ -845,3 +845,21 @@ Resultado: superado para navegación fuera de la pantalla durante un cálculo, r
 Alcance: comprobación manual del comportamiento visible. No se instrumentó la petición HTTP para verificar su cancelación efectiva ni se comprobó la interrupción del trabajo en el servidor. No equivale a muerte del proceso, cierre forzado ni fallo de guardado.
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
+
+## 29. Cierre de conexión HTTP tras cancelación
+
+Se añadió una prueba automatizada con un servidor HTTP local de prueba. El servidor recibe la solicitud y expone el socket sin enviar una respuesta. Antes de cancelar se comprueba que no se ha observado el cierre de la conexión.
+
+Tras activar la señal de cancelación, se verifican ambos resultados:
+- El adaptador devuelve RouteOptimizationFailureType.cancelled.
+- El servidor observa el cierre de la conexión dentro del límite de espera de la prueba.
+
+Resultados:
+- 13 pruebas del adaptador superadas.
+- Análisis estático sin incidencias.
+- Suite habitual: 234 pruebas superadas y 13 pruebas locales omitidas por defecto.
+- git diff --check sin incidencias.
+
+Alcance: cierre de la conexión contra un servidor local de prueba. No demuestra la interrupción del trabajo interno de VROOM ni instrumenta la cancelación desde la navegación de la aplicación.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.

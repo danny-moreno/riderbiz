@@ -284,6 +284,56 @@ void main() {
       await expectation;
     });
 
+    test('closes the HTTP connection after cancellation', () async {
+      final received = Completer<void>();
+      final disconnected = Completer<void>();
+      Socket? connection;
+
+      server.listen((incoming) async {
+        await incoming.drain<void>();
+        final socket = await incoming.response.detachSocket(
+          writeHeaders: false,
+        );
+        connection = socket;
+        socket.listen(
+          (_) {},
+          onDone: () {
+            if (!disconnected.isCompleted) disconnected.complete();
+          },
+          onError: (Object error, StackTrace stack) {
+            if (!disconnected.isCompleted) {
+              disconnected.completeError(error, stack);
+            }
+          },
+        );
+        received.complete();
+      });
+
+      final signal = RouteOptimizationCancellationSignal();
+      final adapter = VroomRouteOptimizationAdapter(endpoint: endpoint);
+      final connectionClosed = disconnected.future.timeout(
+        const Duration(seconds: 3),
+      );
+
+      final expectation = expectLater(
+        adapter.optimize(
+          request(timeout: const Duration(seconds: 10)),
+          cancellationSignal: signal,
+        ),
+        failure(RouteOptimizationFailureType.cancelled),
+      );
+
+      try {
+        await received.future.timeout(const Duration(seconds: 3));
+        expect(disconnected.isCompleted, isFalse);
+        signal.cancel();
+        await Future.wait<void>([expectation, connectionClosed]);
+      } finally {
+        signal.cancel();
+        connection?.destroy();
+      }
+    });
+
     test('rejects cancellation requested before execution', () async {
       final signal = RouteOptimizationCancellationSignal()..cancel();
       final adapter = VroomRouteOptimizationAdapter(endpoint: endpoint);
