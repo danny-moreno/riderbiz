@@ -209,7 +209,9 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
               id: 'TASK-$id',
               stopId: 'STOP-$id',
               type: RouteTaskType.delivery,
-              status: RouteTaskStatus.pending,
+              status: _deliveryStatuses['STOP-$id'] == 'delivered'
+                  ? RouteTaskStatus.completed
+                  : RouteTaskStatus.pending,
               priority: RoutePriority.normal,
               serviceDuration: const Duration(seconds: 120),
             ),
@@ -221,11 +223,22 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
       ),
       departureAt: DateTime.now().toUtc(),
       timeout: const Duration(seconds: 40),
+      reoptimizePendingOnly: true,
     );
   }
 
   Future<void> _calculate() async {
-    if (_isBusy || _isLoading || _isSaving || _confirmingStopId != null) {
+    if (_isBusy ||
+        _isLoading ||
+        _isSaving ||
+        !_storageReady ||
+        _confirmingStopId != null) {
+      return;
+    }
+
+    if (_deliveryStatuses.length ==
+            SyntheticRouteDeliveryService.packageIdsByStop.length &&
+        _deliveryStatuses.values.every((status) => status == 'delivered')) {
       return;
     }
 
@@ -283,6 +296,11 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
   Widget build(BuildContext context) {
     final candidate = _candidate;
     final accepted = _accepted;
+    final allDelivered =
+        _storageReady &&
+        _deliveryStatuses.length ==
+            SyntheticRouteDeliveryService.packageIdsByStop.length &&
+        _deliveryStatuses.values.every((status) => status == 'delivered');
 
     return Scaffold(
       appBar: AppBar(title: const Text('Prueba de ruta sintética')),
@@ -296,18 +314,28 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
           const SizedBox(height: 12),
           const Text(
             'Datos sintéticos. Cada entrega tiene dos minutos de servicio. '
-            'No se utiliza la ubicación del dispositivo.',
+            'Se calculan únicamente las entregas pendientes desde un origen '
+            'sintético fijo. No se utiliza la ubicación del dispositivo.',
           ),
           const SizedBox(height: 16),
           const Text('Orden inicial: STOP-A → STOP-B'),
           const SizedBox(height: 24),
           FilledButton(
             onPressed:
-                _isBusy || _isLoading || _isSaving || _confirmingStopId != null
+                _isBusy ||
+                    _isLoading ||
+                    _isSaving ||
+                    !_storageReady ||
+                    _confirmingStopId != null ||
+                    allDelivered
                 ? null
                 : _calculate,
             child: Text(_isBusy ? 'Calculando…' : 'Calcular propuesta'),
           ),
+          if (allDelivered) ...[
+            const SizedBox(height: 16),
+            const Text('No quedan entregas pendientes.'),
+          ],
           if (_isBusy) ...[
             const SizedBox(height: 16),
             const LinearProgressIndicator(),

@@ -29,6 +29,7 @@ RouteCandidate syntheticCandidate({
 
 class ScreenTestAdapter implements RouteOptimizationPort {
   int calls = 0;
+  final requests = <RouteOptimizationRequest>[];
 
   @override
   String get providerId => 'synthetic-screen-test';
@@ -40,8 +41,16 @@ class ScreenTestAdapter implements RouteOptimizationPort {
   }) async {
     cancellationSignal?.throwIfCancelled();
     calls++;
+    requests.add(request);
 
-    return syntheticCandidate(order: ['STOP-B', 'STOP-A'], distance: 2400);
+    return syntheticCandidate(
+      order: request.plan.pendingTasks
+          .map((task) => task.stopId)
+          .toList()
+          .reversed
+          .toList(),
+      distance: 2400,
+    );
   }
 }
 
@@ -179,6 +188,41 @@ void main() {
         () => database.select(database.deliveryEvents).get(),
       );
       expect(restoredEvents, hasLength(1));
+      await tester.ensureVisible(calculate);
+      await tester.tap(calculate);
+      await tester.pumpAndSettle();
+
+      expect(adapter.calls, 2);
+      expect(adapter.requests.last.reoptimizePendingOnly, isTrue);
+      expect(
+        adapter.requests.last.plan.pendingTasks.map((task) => task.stopId),
+        ['STOP-B'],
+      );
+      expect(
+        adapter.requests.last.plan.tasks
+            .singleWhere((task) => task.stopId == 'STOP-A')
+            .status,
+        RouteTaskStatus.completed,
+      );
+      expect(find.text('Orden: STOP-B'), findsOneWidget);
+
+      final confirmB = find.widgetWithText(
+        FilledButton,
+        'Confirmar entrega STOP-B',
+      );
+      await tester.ensureVisible(confirmB);
+      await tester.tap(confirmB);
+      await tester.pumpAndSettle();
+
+      expect(find.text('No quedan entregas pendientes.'), findsOneWidget);
+      expect(tester.widget<FilledButton>(calculate).onPressed, isNull);
+      expect(find.text('Propuesta calculada'), findsNothing);
+      expect(adapter.calls, 2);
+
+      final completedEvents = await tester.runAsync(
+        () => database.select(database.deliveryEvents).get(),
+      );
+      expect(completedEvents, hasLength(2));
     } finally {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.runAsync(() => database.close());
