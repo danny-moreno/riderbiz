@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import '../daily_session/daily_session_screen.dart';
+
 import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
 
@@ -286,7 +288,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onDestinationSelected: (index) {
           if (index == 0) return;
           if (index == 1) {
-            _open(widget.validationBuilder);
+            _open((_) => const DailySessionScreen());
             return;
           }
           ScaffoldMessenger.of(context).showSnackBar(
