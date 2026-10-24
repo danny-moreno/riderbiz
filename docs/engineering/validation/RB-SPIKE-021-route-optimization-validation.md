@@ -606,6 +606,20 @@ fvm flutter test \
   --reporter=expanded \
   test/features/route_optimization/vroom_volume_runtime_test.dart
 ```
+### Ejecución conjunta con servicios locales
+
+El 2026-10-24 se ejecutó la suite completa con VROOM y OSRM disponibles:
+
+```bash
+fvm flutter test \
+  --dart-define=RUN_LOCAL_VROOM=true \
+  --concurrency=1 \
+  --timeout=2m
+```
+
+Resultado: 242 pruebas superadas, ninguna omitida, en aproximadamente 16 segundos. Incluye las 229 pruebas habituales y las 13 pruebas locales activadas explícitamente.
+
+Esta ejecución confirma el resultado conjunto de la suite en el entorno local descrito; no amplía por sí sola el alcance de las validaciones de campo.
 
 ## 20. Privacidad y almacenamiento
 
@@ -717,3 +731,4 @@ La Issue #21 permanece abierta.
 - Versión 0.10 (2026-10-24): cálculo sintético desde tablet física y comprobación del presupuesto restante entre tramos; 215 pruebas superadas y trece locales omitidas por defecto.
 - Versión 0.11 (2026-10-24): aceptación y persistencia de rutas, migraciones al esquema 4 y conservación de la ruta ante desconexión; 223 pruebas superadas y trece locales omitidas por defecto.
 - Versión 0.12 (2026-10-24): confirmación persistente de entregas sintéticas y cálculo de pendientes; 229 pruebas superadas y trece locales omitidas por defecto.
+- Versión 0.13 (2026-10-24): ejecución conjunta de 242 pruebas, incluidas las trece pruebas con servicios locales, sin omisiones ni fallos.
