@@ -35,3 +35,9 @@ La solicitud conserva un origen fijo. No se valida posición cambiante, interfaz
 No demuestra todavía la recuperación de una jornada completa sin depender del generador.
 
 La issue #21 permanece abierta y ADR-004 no cambia de estado.
+
+## Actualización con esquema v5
+
+La prueba integrada utiliza ahora RoutePlanStore para guardar la definición inicial y recuperar paradas, coordenadas, tareas y tiempos de servicio tras reabrir SQLite. Los estados se recuperan de los paquetes y el orden aceptado de AcceptedRouteStore.
+
+Esto sustituye la reconstrucción desde el generador descrita en los límites anteriores. El generador permanece para preparar los datos iniciales. Véase RB-ROUTING-003-route-plan-persistence.md.

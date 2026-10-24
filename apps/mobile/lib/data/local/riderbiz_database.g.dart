@@ -3234,6 +3234,342 @@ class AcceptedRouteSnapshotsCompanion
   }
 }
 
+class $RoutePlanDefinitionsTable extends RoutePlanDefinitions
+    with TableInfo<$RoutePlanDefinitionsTable, RoutePlanDefinition> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RoutePlanDefinitionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _routeIdMeta = const VerificationMeta(
+    'routeId',
+  );
+  @override
+  late final GeneratedColumn<String> routeId = GeneratedColumn<String>(
+    'route_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deliveryRunIdMeta = const VerificationMeta(
+    'deliveryRunId',
+  );
+  @override
+  late final GeneratedColumn<String> deliveryRunId = GeneratedColumn<String>(
+    'delivery_run_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES delivery_runs (id) ON DELETE RESTRICT',
+    ),
+  );
+  static const VerificationMeta _definitionJsonMeta = const VerificationMeta(
+    'definitionJson',
+  );
+  @override
+  late final GeneratedColumn<String> definitionJson = GeneratedColumn<String>(
+    'definition_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    routeId,
+    deliveryRunId,
+    definitionJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'route_plan_definitions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RoutePlanDefinition> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('route_id')) {
+      context.handle(
+        _routeIdMeta,
+        routeId.isAcceptableOrUnknown(data['route_id']!, _routeIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_routeIdMeta);
+    }
+    if (data.containsKey('delivery_run_id')) {
+      context.handle(
+        _deliveryRunIdMeta,
+        deliveryRunId.isAcceptableOrUnknown(
+          data['delivery_run_id']!,
+          _deliveryRunIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_deliveryRunIdMeta);
+    }
+    if (data.containsKey('definition_json')) {
+      context.handle(
+        _definitionJsonMeta,
+        definitionJson.isAcceptableOrUnknown(
+          data['definition_json']!,
+          _definitionJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_definitionJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {routeId};
+  @override
+  RoutePlanDefinition map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RoutePlanDefinition(
+      routeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}route_id'],
+      )!,
+      deliveryRunId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}delivery_run_id'],
+      )!,
+      definitionJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}definition_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $RoutePlanDefinitionsTable createAlias(String alias) {
+    return $RoutePlanDefinitionsTable(attachedDatabase, alias);
+  }
+}
+
+class RoutePlanDefinition extends DataClass
+    implements Insertable<RoutePlanDefinition> {
+  final String routeId;
+  final String deliveryRunId;
+  final String definitionJson;
+  final DateTime updatedAt;
+  const RoutePlanDefinition({
+    required this.routeId,
+    required this.deliveryRunId,
+    required this.definitionJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['route_id'] = Variable<String>(routeId);
+    map['delivery_run_id'] = Variable<String>(deliveryRunId);
+    map['definition_json'] = Variable<String>(definitionJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  RoutePlanDefinitionsCompanion toCompanion(bool nullToAbsent) {
+    return RoutePlanDefinitionsCompanion(
+      routeId: Value(routeId),
+      deliveryRunId: Value(deliveryRunId),
+      definitionJson: Value(definitionJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory RoutePlanDefinition.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RoutePlanDefinition(
+      routeId: serializer.fromJson<String>(json['routeId']),
+      deliveryRunId: serializer.fromJson<String>(json['deliveryRunId']),
+      definitionJson: serializer.fromJson<String>(json['definitionJson']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'routeId': serializer.toJson<String>(routeId),
+      'deliveryRunId': serializer.toJson<String>(deliveryRunId),
+      'definitionJson': serializer.toJson<String>(definitionJson),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  RoutePlanDefinition copyWith({
+    String? routeId,
+    String? deliveryRunId,
+    String? definitionJson,
+    DateTime? updatedAt,
+  }) => RoutePlanDefinition(
+    routeId: routeId ?? this.routeId,
+    deliveryRunId: deliveryRunId ?? this.deliveryRunId,
+    definitionJson: definitionJson ?? this.definitionJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  RoutePlanDefinition copyWithCompanion(RoutePlanDefinitionsCompanion data) {
+    return RoutePlanDefinition(
+      routeId: data.routeId.present ? data.routeId.value : this.routeId,
+      deliveryRunId: data.deliveryRunId.present
+          ? data.deliveryRunId.value
+          : this.deliveryRunId,
+      definitionJson: data.definitionJson.present
+          ? data.definitionJson.value
+          : this.definitionJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RoutePlanDefinition(')
+          ..write('routeId: $routeId, ')
+          ..write('deliveryRunId: $deliveryRunId, ')
+          ..write('definitionJson: $definitionJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(routeId, deliveryRunId, definitionJson, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RoutePlanDefinition &&
+          other.routeId == this.routeId &&
+          other.deliveryRunId == this.deliveryRunId &&
+          other.definitionJson == this.definitionJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class RoutePlanDefinitionsCompanion
+    extends UpdateCompanion<RoutePlanDefinition> {
+  final Value<String> routeId;
+  final Value<String> deliveryRunId;
+  final Value<String> definitionJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const RoutePlanDefinitionsCompanion({
+    this.routeId = const Value.absent(),
+    this.deliveryRunId = const Value.absent(),
+    this.definitionJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RoutePlanDefinitionsCompanion.insert({
+    required String routeId,
+    required String deliveryRunId,
+    required String definitionJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : routeId = Value(routeId),
+       deliveryRunId = Value(deliveryRunId),
+       definitionJson = Value(definitionJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<RoutePlanDefinition> custom({
+    Expression<String>? routeId,
+    Expression<String>? deliveryRunId,
+    Expression<String>? definitionJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (routeId != null) 'route_id': routeId,
+      if (deliveryRunId != null) 'delivery_run_id': deliveryRunId,
+      if (definitionJson != null) 'definition_json': definitionJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RoutePlanDefinitionsCompanion copyWith({
+    Value<String>? routeId,
+    Value<String>? deliveryRunId,
+    Value<String>? definitionJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return RoutePlanDefinitionsCompanion(
+      routeId: routeId ?? this.routeId,
+      deliveryRunId: deliveryRunId ?? this.deliveryRunId,
+      definitionJson: definitionJson ?? this.definitionJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (routeId.present) {
+      map['route_id'] = Variable<String>(routeId.value);
+    }
+    if (deliveryRunId.present) {
+      map['delivery_run_id'] = Variable<String>(deliveryRunId.value);
+    }
+    if (definitionJson.present) {
+      map['definition_json'] = Variable<String>(definitionJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RoutePlanDefinitionsCompanion(')
+          ..write('routeId: $routeId, ')
+          ..write('deliveryRunId: $deliveryRunId, ')
+          ..write('definitionJson: $definitionJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$RiderBizDatabase extends GeneratedDatabase {
   _$RiderBizDatabase(QueryExecutor e) : super(e);
   $RiderBizDatabaseManager get managers => $RiderBizDatabaseManager(this);
@@ -3250,6 +3586,8 @@ abstract class _$RiderBizDatabase extends GeneratedDatabase {
   late final $DeliveryEventsTable deliveryEvents = $DeliveryEventsTable(this);
   late final $AcceptedRouteSnapshotsTable acceptedRouteSnapshots =
       $AcceptedRouteSnapshotsTable(this);
+  late final $RoutePlanDefinitionsTable routePlanDefinitions =
+      $RoutePlanDefinitionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3262,6 +3600,7 @@ abstract class _$RiderBizDatabase extends GeneratedDatabase {
     syntheticPackages,
     deliveryEvents,
     acceptedRouteSnapshots,
+    routePlanDefinitions,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -4821,6 +5160,31 @@ final class $$DeliveryRunsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $RoutePlanDefinitionsTable,
+    List<RoutePlanDefinition>
+  >
+  _routePlanDefinitionsRefsTable(_$RiderBizDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.routePlanDefinitions,
+        aliasName: 'delivery_runs__id__route_plan_definitions__delivery_run_id',
+      );
+
+  $$RoutePlanDefinitionsTableProcessedTableManager
+  get routePlanDefinitionsRefs {
+    final manager = $$RoutePlanDefinitionsTableTableManager(
+      $_db,
+      $_db.routePlanDefinitions,
+    ).filter((f) => f.deliveryRunId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _routePlanDefinitionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$DeliveryRunsTableFilterComposer
@@ -4886,6 +5250,31 @@ class $$DeliveryRunsTableFilterComposer
           }) => $$SyntheticPackagesTableFilterComposer(
             $db: $db,
             $table: $db.syntheticPackages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> routePlanDefinitionsRefs(
+    Expression<bool> Function($$RoutePlanDefinitionsTableFilterComposer f) f,
+  ) {
+    final $$RoutePlanDefinitionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.routePlanDefinitions,
+      getReferencedColumn: (t) => t.deliveryRunId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RoutePlanDefinitionsTableFilterComposer(
+            $db: $db,
+            $table: $db.routePlanDefinitions,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5013,6 +5402,32 @@ class $$DeliveryRunsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> routePlanDefinitionsRefs<T extends Object>(
+    Expression<T> Function($$RoutePlanDefinitionsTableAnnotationComposer a) f,
+  ) {
+    final $$RoutePlanDefinitionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.routePlanDefinitions,
+          getReferencedColumn: (t) => t.deliveryRunId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RoutePlanDefinitionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.routePlanDefinitions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$DeliveryRunsTableTableManager
@@ -5028,7 +5443,11 @@ class $$DeliveryRunsTableTableManager
           $$DeliveryRunsTableUpdateCompanionBuilder,
           (DeliveryRun, $$DeliveryRunsTableReferences),
           DeliveryRun,
-          PrefetchHooks Function({bool operatorId, bool syntheticPackagesRefs})
+          PrefetchHooks Function({
+            bool operatorId,
+            bool syntheticPackagesRefs,
+            bool routePlanDefinitionsRefs,
+          })
         > {
   $$DeliveryRunsTableTableManager(
     _$RiderBizDatabase db,
@@ -5080,11 +5499,16 @@ class $$DeliveryRunsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({operatorId = false, syntheticPackagesRefs = false}) {
+              ({
+                operatorId = false,
+                syntheticPackagesRefs = false,
+                routePlanDefinitionsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (syntheticPackagesRefs) db.syntheticPackages,
+                    if (routePlanDefinitionsRefs) db.routePlanDefinitions,
                   ],
                   addJoins:
                       <
@@ -5139,6 +5563,27 @@ class $$DeliveryRunsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (routePlanDefinitionsRefs)
+                        await $_getPrefetchedData<
+                          DeliveryRun,
+                          $DeliveryRunsTable,
+                          RoutePlanDefinition
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DeliveryRunsTableReferences
+                              ._routePlanDefinitionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DeliveryRunsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).routePlanDefinitionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.deliveryRunId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -5159,7 +5604,11 @@ typedef $$DeliveryRunsTableProcessedTableManager =
       $$DeliveryRunsTableUpdateCompanionBuilder,
       (DeliveryRun, $$DeliveryRunsTableReferences),
       DeliveryRun,
-      PrefetchHooks Function({bool operatorId, bool syntheticPackagesRefs})
+      PrefetchHooks Function({
+        bool operatorId,
+        bool syntheticPackagesRefs,
+        bool routePlanDefinitionsRefs,
+      })
     >;
 typedef $$SyntheticPackagesTableCreateCompanionBuilder =
     SyntheticPackagesCompanion Function({
@@ -6494,6 +6943,323 @@ typedef $$AcceptedRouteSnapshotsTableProcessedTableManager =
       AcceptedRouteSnapshot,
       PrefetchHooks Function()
     >;
+typedef $$RoutePlanDefinitionsTableCreateCompanionBuilder =
+    RoutePlanDefinitionsCompanion Function({
+      required String routeId,
+      required String deliveryRunId,
+      required String definitionJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$RoutePlanDefinitionsTableUpdateCompanionBuilder =
+    RoutePlanDefinitionsCompanion Function({
+      Value<String> routeId,
+      Value<String> deliveryRunId,
+      Value<String> definitionJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$RoutePlanDefinitionsTableReferences
+    extends
+        BaseReferences<
+          _$RiderBizDatabase,
+          $RoutePlanDefinitionsTable,
+          RoutePlanDefinition
+        > {
+  $$RoutePlanDefinitionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $DeliveryRunsTable _deliveryRunIdTable(_$RiderBizDatabase db) =>
+      db.deliveryRuns.createAlias(
+        'route_plan_definitions__delivery_run_id__delivery_runs__id',
+      );
+
+  $$DeliveryRunsTableProcessedTableManager get deliveryRunId {
+    final $_column = $_itemColumn<String>('delivery_run_id')!;
+
+    final manager = $$DeliveryRunsTableTableManager(
+      $_db,
+      $_db.deliveryRuns,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_deliveryRunIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$RoutePlanDefinitionsTableFilterComposer
+    extends Composer<_$RiderBizDatabase, $RoutePlanDefinitionsTable> {
+  $$RoutePlanDefinitionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get routeId => $composableBuilder(
+    column: $table.routeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get definitionJson => $composableBuilder(
+    column: $table.definitionJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$DeliveryRunsTableFilterComposer get deliveryRunId {
+    final $$DeliveryRunsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.deliveryRunId,
+      referencedTable: $db.deliveryRuns,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DeliveryRunsTableFilterComposer(
+            $db: $db,
+            $table: $db.deliveryRuns,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RoutePlanDefinitionsTableOrderingComposer
+    extends Composer<_$RiderBizDatabase, $RoutePlanDefinitionsTable> {
+  $$RoutePlanDefinitionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get routeId => $composableBuilder(
+    column: $table.routeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get definitionJson => $composableBuilder(
+    column: $table.definitionJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$DeliveryRunsTableOrderingComposer get deliveryRunId {
+    final $$DeliveryRunsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.deliveryRunId,
+      referencedTable: $db.deliveryRuns,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DeliveryRunsTableOrderingComposer(
+            $db: $db,
+            $table: $db.deliveryRuns,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RoutePlanDefinitionsTableAnnotationComposer
+    extends Composer<_$RiderBizDatabase, $RoutePlanDefinitionsTable> {
+  $$RoutePlanDefinitionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get routeId =>
+      $composableBuilder(column: $table.routeId, builder: (column) => column);
+
+  GeneratedColumn<String> get definitionJson => $composableBuilder(
+    column: $table.definitionJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$DeliveryRunsTableAnnotationComposer get deliveryRunId {
+    final $$DeliveryRunsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.deliveryRunId,
+      referencedTable: $db.deliveryRuns,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DeliveryRunsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.deliveryRuns,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RoutePlanDefinitionsTableTableManager
+    extends
+        RootTableManager<
+          _$RiderBizDatabase,
+          $RoutePlanDefinitionsTable,
+          RoutePlanDefinition,
+          $$RoutePlanDefinitionsTableFilterComposer,
+          $$RoutePlanDefinitionsTableOrderingComposer,
+          $$RoutePlanDefinitionsTableAnnotationComposer,
+          $$RoutePlanDefinitionsTableCreateCompanionBuilder,
+          $$RoutePlanDefinitionsTableUpdateCompanionBuilder,
+          (RoutePlanDefinition, $$RoutePlanDefinitionsTableReferences),
+          RoutePlanDefinition,
+          PrefetchHooks Function({bool deliveryRunId})
+        > {
+  $$RoutePlanDefinitionsTableTableManager(
+    _$RiderBizDatabase db,
+    $RoutePlanDefinitionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RoutePlanDefinitionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RoutePlanDefinitionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RoutePlanDefinitionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> routeId = const Value.absent(),
+                Value<String> deliveryRunId = const Value.absent(),
+                Value<String> definitionJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RoutePlanDefinitionsCompanion(
+                routeId: routeId,
+                deliveryRunId: deliveryRunId,
+                definitionJson: definitionJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String routeId,
+                required String deliveryRunId,
+                required String definitionJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => RoutePlanDefinitionsCompanion.insert(
+                routeId: routeId,
+                deliveryRunId: deliveryRunId,
+                definitionJson: definitionJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$RoutePlanDefinitionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({deliveryRunId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (deliveryRunId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.deliveryRunId,
+                        referencedTable: $$RoutePlanDefinitionsTableReferences
+                            ._deliveryRunIdTable(db),
+                        referencedColumn: $$RoutePlanDefinitionsTableReferences
+                            ._deliveryRunIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$RoutePlanDefinitionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$RiderBizDatabase,
+      $RoutePlanDefinitionsTable,
+      RoutePlanDefinition,
+      $$RoutePlanDefinitionsTableFilterComposer,
+      $$RoutePlanDefinitionsTableOrderingComposer,
+      $$RoutePlanDefinitionsTableAnnotationComposer,
+      $$RoutePlanDefinitionsTableCreateCompanionBuilder,
+      $$RoutePlanDefinitionsTableUpdateCompanionBuilder,
+      (RoutePlanDefinition, $$RoutePlanDefinitionsTableReferences),
+      RoutePlanDefinition,
+      PrefetchHooks Function({bool deliveryRunId})
+    >;
 
 class $RiderBizDatabaseManager {
   final _$RiderBizDatabase _db;
@@ -6515,4 +7281,6 @@ class $RiderBizDatabaseManager {
         _db,
         _db.acceptedRouteSnapshots,
       );
+  $$RoutePlanDefinitionsTableTableManager get routePlanDefinitions =>
+      $$RoutePlanDefinitionsTableTableManager(_db, _db.routePlanDefinitions);
 }

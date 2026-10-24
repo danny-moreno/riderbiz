@@ -7,6 +7,7 @@ import 'package:riderbiz_mobile/data/local/riderbiz_database.dart';
 import 'package:riderbiz_mobile/features/delivery_accounting/delivery_accounting_service.dart';
 import 'package:riderbiz_mobile/features/operator_settings/operator_tariff_service.dart';
 import 'package:riderbiz_mobile/features/route_optimization/accepted_route_store.dart';
+import 'package:riderbiz_mobile/features/route_optimization/route_plan_store.dart';
 import 'package:riderbiz_mobile/features/route_optimization/route_optimization_models.dart';
 import 'package:riderbiz_mobile/features/route_optimization/vroom_route_optimization_adapter.dart';
 
@@ -70,6 +71,12 @@ void main() {
           ]);
         });
 
+        await RoutePlanStore(db).save(
+          deliveryRunId: 'RUN-INTEGRATED',
+          plan: initial.plan,
+          updatedAt: acceptedAt,
+        );
+
         final original = await adapter.optimize(initial);
         expect(original.stopOrder, hasLength(60));
         expect(
@@ -127,24 +134,25 @@ void main() {
         expect(stored.acceptedAt, acceptedAt);
         expect(stored.metrics.distanceMeters, original.metrics.distanceMeters);
 
+        final recoveredPlan = await RoutePlanStore(db).load(initial.plan.id);
+        expect(recoveredPlan, isNotNull);
+        expect(recoveredPlan!.tasks, hasLength(150));
+        expect(recoveredPlan.stops, hasLength(60));
+        expect(
+          recoveredPlan.tasks
+              .where((task) => task.status == RouteTaskStatus.completed)
+              .map((task) => task.id)
+              .toSet(),
+          deliveredIds,
+        );
+
         final request = RouteOptimizationRequest(
           plan: RoutePlan(
-            id: initial.plan.id,
+            id: recoveredPlan.id,
             currentOrder: stored.stopOrder,
-            stops: initial.plan.stops,
-            tasks: [
-              for (final task in initial.plan.tasks)
-                RouteTask(
-                  id: task.id,
-                  stopId: task.stopId,
-                  type: task.type,
-                  status: byId[task.id]!.status == 'delivered'
-                      ? RouteTaskStatus.completed
-                      : RouteTaskStatus.pending,
-                  priority: task.priority,
-                  serviceDuration: task.serviceDuration,
-                ),
-            ],
+            stops: recoveredPlan.stops,
+            tasks: recoveredPlan.tasks,
+            walkingClusters: recoveredPlan.walkingClusters,
           ),
           currentLocation: initial.currentLocation,
           departureAt: replacementAt,
