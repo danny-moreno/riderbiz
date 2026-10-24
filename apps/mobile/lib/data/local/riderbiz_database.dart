@@ -174,7 +174,8 @@ class AcceptedRouteSnapshots extends Table {
   ],
 )
 class RiderBizDatabase extends _$RiderBizDatabase {
-  RiderBizDatabase() : super(driftDatabase(name: 'riderbiz'));
+  RiderBizDatabase({String name = 'riderbiz'})
+    : super(driftDatabase(name: name));
 
   RiderBizDatabase.forTesting(super.executor);
 
