@@ -49,6 +49,8 @@ void main() {
   testWidgets('replaces the saved route only after explicit acceptance', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(1000, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     final database = RiderBizDatabase.forTesting(NativeDatabase.memory());
     final store = AcceptedRouteStore(database);
     final adapter = ScreenTestAdapter();
@@ -115,8 +117,68 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(adapter.calls, 1);
       expect(find.text('Orden aceptado: STOP-B → STOP-A'), findsOneWidget);
       expect(adapter.calls, 1);
+      final confirmA = find.widgetWithText(
+        FilledButton,
+        'Confirmar entrega STOP-A',
+      );
+
+      await tester.ensureVisible(confirmA);
+      await tester.tap(confirmA);
+      await tester.pumpAndSettle();
+
+      final cardA = find.ancestor(
+        of: find.text('STOP-A'),
+        matching: find.byType(Card),
+      );
+      final cardB = find.ancestor(
+        of: find.text('STOP-B'),
+        matching: find.byType(Card),
+      );
+
+      expect(
+        find.descendant(of: cardA, matching: find.text('Estado: Entregado')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: cardB, matching: find.text('Estado: Pendiente')),
+        findsOneWidget,
+      );
+      expect(tester.widget<FilledButton>(confirmA).onPressed, isNull);
+
+      final events = await tester.runAsync(
+        () => database.select(database.deliveryEvents).get(),
+      );
+      expect(events, hasLength(1));
+      expect(events!.single.packageId, 'RB-SYN-ROUTE-A');
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RouteValidationScreen(database: database, adapter: adapter),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(of: cardA, matching: find.text('Estado: Entregado')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: cardB, matching: find.text('Estado: Pendiente')),
+        findsOneWidget,
+      );
+      expect(tester.widget<FilledButton>(confirmA).onPressed, isNull);
+      expect(adapter.calls, 1);
+
+      final restoredEvents = await tester.runAsync(
+        () => database.select(database.deliveryEvents).get(),
+      );
+      expect(restoredEvents, hasLength(1));
     } finally {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.runAsync(() => database.close());

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'route_optimization_models.dart';
 import 'route_optimization_port.dart';
 import 'vroom_route_optimization_adapter.dart';
+import 'synthetic_route_delivery_service.dart';
 
 import 'dart:async';
 
@@ -25,6 +26,10 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
   late final RiderBizDatabase _database;
   late final AcceptedRouteStore _store;
   late final RouteOptimizationPort _adapter;
+  late final SyntheticRouteDeliveryService _deliveries;
+  Map<String, String> _deliveryStatuses = {};
+  String? _confirmingStopId;
+  String? _deliveryError;
 
   AcceptedRouteSnapshot? _accepted;
   bool _isLoading = true;
@@ -37,6 +42,7 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
     super.initState();
     _database = widget.database ?? RiderBizDatabase();
     _store = AcceptedRouteStore(_database);
+    _deliveries = SyntheticRouteDeliveryService(_database);
     _adapter =
         widget.adapter ??
         VroomRouteOptimizationAdapter(
@@ -54,10 +60,16 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
 
     try {
       final accepted = await _store.load(_routeId);
+      await _deliveries.prepare();
+      final progress = await _deliveries.loadProgress();
       if (!mounted) return;
 
       setState(() {
         _accepted = accepted;
+        _deliveryStatuses = {
+          for (final entry in progress.entries) entry.key: entry.value.status,
+        };
+        _deliveryError = null;
         _storageReady = true;
       });
     } catch (_) {
@@ -73,12 +85,55 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
     }
   }
 
+  Future<void> _confirmDelivery(String stopId) async {
+    if (_isBusy ||
+        _isLoading ||
+        _isSaving ||
+        !_storageReady ||
+        _confirmingStopId != null ||
+        _deliveryStatuses[stopId] != 'pending' ||
+        !(_accepted?.stopOrder.contains(stopId) ?? false)) {
+      return;
+    }
+
+    setState(() {
+      _confirmingStopId = stopId;
+      _deliveryError = null;
+    });
+
+    try {
+      final delivered = await _deliveries.confirmStop(
+        stopId: stopId,
+        deliveredAt: DateTime.now().toUtc(),
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _deliveryStatuses = {..._deliveryStatuses, stopId: delivered.status};
+        _candidate = null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _deliveryError =
+            'No se pudo confirmar la entrega. Vuelve a cargar el progreso '
+            'antes de intentarlo de nuevo.';
+        _storageReady = false;
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _confirmingStopId = null);
+      }
+    }
+  }
+
   Future<void> _acceptProposal() async {
     final candidate = _candidate;
     if (candidate == null ||
         _isBusy ||
         _isLoading ||
         _isSaving ||
+        _confirmingStopId != null ||
         !_storageReady) {
       return;
     }
@@ -170,7 +225,9 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
   }
 
   Future<void> _calculate() async {
-    if (_isBusy || _isLoading || _isSaving) return;
+    if (_isBusy || _isLoading || _isSaving || _confirmingStopId != null) {
+      return;
+    }
 
     final signal = RouteOptimizationCancellationSignal();
     _signal = signal;
@@ -245,7 +302,10 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
           const Text('Orden inicial: STOP-A → STOP-B'),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: _isBusy || _isLoading || _isSaving ? null : _calculate,
+            onPressed:
+                _isBusy || _isLoading || _isSaving || _confirmingStopId != null
+                ? null
+                : _calculate,
             child: Text(_isBusy ? 'Calculando…' : 'Calcular propuesta'),
           ),
           if (_isBusy) ...[
@@ -269,6 +329,14 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
                 child: const Text('Volver a cargar ruta guardada'),
               ),
           ],
+          if (_deliveryError != null) ...[
+            const SizedBox(height: 16),
+            Text(_deliveryError!),
+            TextButton(
+              onPressed: _isLoading ? null : _loadAccepted,
+              child: const Text('Volver a cargar progreso'),
+            ),
+          ],
           if (accepted != null) ...[
             const SizedBox(height: 24),
             Text(
@@ -285,6 +353,49 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
             const Text(
               'Esta ruta se conserva hasta que aceptes otra propuesta.',
             ),
+            const SizedBox(height: 16),
+            const Text(
+              'Entregas sintéticas · tarifa ficticia de 0,01 € por paquete.',
+            ),
+            for (final stopId in accepted.stopOrder)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        stopId,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(
+                        _deliveryStatuses[stopId] == 'delivered'
+                            ? 'Estado: Entregado'
+                            : _deliveryStatuses[stopId] == 'pending'
+                            ? 'Estado: Pendiente'
+                            : 'Estado: No disponible',
+                      ),
+                      const SizedBox(height: 8),
+                      FilledButton.tonal(
+                        onPressed:
+                            _deliveryStatuses[stopId] != 'pending' ||
+                                !_storageReady ||
+                                _isBusy ||
+                                _isLoading ||
+                                _isSaving ||
+                                _confirmingStopId != null
+                            ? null
+                            : () => _confirmDelivery(stopId),
+                        child: Text(
+                          _confirmingStopId == stopId
+                              ? 'Confirmando…'
+                              : 'Confirmar entrega $stopId',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
 
           if (candidate != null) ...[
@@ -306,7 +417,10 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
             ),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: _isSaving || !_storageReady ? null : _acceptProposal,
+              onPressed:
+                  _isSaving || !_storageReady || _confirmingStopId != null
+                  ? null
+                  : _acceptProposal,
               child: Text(_isSaving ? 'Guardando…' : 'Aceptar propuesta'),
             ),
           ],
