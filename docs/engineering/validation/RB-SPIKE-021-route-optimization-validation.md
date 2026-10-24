@@ -777,3 +777,26 @@ La Issue #21 permanece abierta.
 - Versión 0.13 (2026-10-24): ejecución conjunta de 242 pruebas, incluidas las trece pruebas con servicios locales, sin omisiones ni fallos.
 - Versión 0.14 (2026-10-24): cuatro correcciones de revisión y ejecución completa de 246 pruebas sin omisiones; suite habitual de 233 pruebas y trece locales omitidas por defecto.
 - Versión 0.15 (2026-10-24): cálculo, aceptación y recuperación de una propuesta parcial desde la Samsung SM-X210, conservando el escenario anterior en otra base de datos.
+
+## 26. Fallo de VROOM y recuperación en tablet física
+
+Validación realizada el 2026-10-24 en Samsung SM-X210 conectada mediante USB, con la base separada del escenario de entregas parciales.
+
+Estado inicial: STOP-A completada, STOP-B pendiente y una ruta parcial previamente aceptada y guardada.
+
+Procedimiento y resultados observados:
+
+1. Se detuvo únicamente VROOM mediante Docker Compose, manteniendo OSRM activo.
+2. Al calcular una propuesta, la aplicación mostró un error de conexión y terminó el estado de cálculo.
+3. La ruta aceptada conservó sus datos y STOP-B continuó pendiente.
+4. Se cerró la aplicación desde aplicaciones recientes y se volvió a abrir con VROOM detenido.
+5. Se recuperó la ruta aceptada con sus datos anteriores y STOP-B pendiente.
+6. Se arrancó VROOM y se volvió a calcular.
+7. Se obtuvo una propuesta únicamente para STOP-B, con distancia y tiempos visibles y sin error.
+8. La ruta aceptada mantuvo su fecha anterior. No se aceptó la nueva propuesta ni se confirmó STOP-B.
+
+Resultado: superado para indisponibilidad del servicio antes de iniciar una solicitud y recuperación posterior.
+
+Alcance: cierre desde aplicaciones recientes, sin borrado de datos. Esta prueba no valida interrupciones durante una solicitud, muerte forzada del proceso, fallos de guardado ni uso en campo.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
