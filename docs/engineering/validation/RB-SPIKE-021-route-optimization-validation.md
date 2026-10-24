@@ -574,7 +574,7 @@ En la Samsung SM-X210 se confirmaron ambas entregas. Tras cerrar y abrir la apli
 
 Con ambas entregas completadas, se comprobó en la tablet el mensaje «No quedan entregas pendientes» y la desactivación del cálculo.
 
-El cálculo utiliza todavía un origen sintético fijo. No se ha comprobado en la tablet el cálculo real con una entrega completada y otra pendiente. Ese caso cuenta con una prueba de pantalla con motor simulado.
+El cálculo utiliza todavía un origen sintético fijo. La comprobación posterior con una entrega completada y otra pendiente, ejecutada desde la tablet contra los motores locales, se documenta en la sección 18.11.
 
 ### 18.10 Correcciones identificadas durante la revisión
 
@@ -588,6 +588,30 @@ La revisión del código identificó cuatro casos límite, reproducidos mediante
 Tras las correcciones se ejecutó la suite completa con servicios locales: 246 pruebas superadas, ninguna omitida, en aproximadamente 15 segundos.
 
 Esta ejecución no amplía el alcance de las pruebas físicas ni valida por sí sola el uso en producción.
+
+### 18.11 Reoptimización parcial desde la tablet
+
+Validación realizada el 2026-10-24 en la Samsung SM-X210, con VROOM y OSRM locales mediante USB.
+
+Se utilizó una base de datos separada, denominada riderbiz_partial_delivery_validation, para conservar los registros del escenario anterior. No se modificó la versión 4 del esquema.
+
+Después de aceptar la ruta inicial de dos paradas, se confirmó únicamente STOP-A. STOP-B permaneció pendiente.
+
+Al calcular otra propuesta, la pantalla mostró únicamente STOP-B:
+
+| Métrica | Resultado |
+|---|---:|
+| Paradas propuestas | 1 |
+| Distancia | 1.616 m |
+| Conducción | 213 s |
+| Servicio | 120 s |
+| Duración total | 333 s |
+
+Antes de aceptar, la ruta anterior permaneció guardada. Tras aceptar la propuesta parcial, cerrar la aplicación y abrirla desde su icono, se recuperaron STOP-B, sus métricas y el estado Pendiente sin solicitar otro cálculo.
+
+El cálculo utiliza un origen sintético fijo. No representa el desplazamiento desde STOP-A ni desde la ubicación actual del dispositivo.
+
+La pantalla muestra las paradas de la propuesta aceptada; después de aceptar la propuesta parcial, STOP-A deja de aparecer en esa lista. Esta prueba no comprueba mediante consulta directa el registro contable de STOP-A después de la sustitución.
 
 ## 19. Pruebas automatizadas
 
@@ -696,6 +720,7 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `23f5e41` | Inclusión del destino explícito en el límite de ubicaciones |
 | `07e9786` | Redondeo del servicio por parada en rutas segmentadas |
 | `ed02a48` | Contraste del servicio devuelto con los trabajos solicitados |
+| `d82c0e1` | Base de datos separada para validar entregas parcialmente completadas |
 
 ## 22. Validaciones pendientes
 
@@ -751,3 +776,4 @@ La Issue #21 permanece abierta.
 - Versión 0.12 (2026-10-24): confirmación persistente de entregas sintéticas y cálculo de pendientes; 229 pruebas superadas y trece locales omitidas por defecto.
 - Versión 0.13 (2026-10-24): ejecución conjunta de 242 pruebas, incluidas las trece pruebas con servicios locales, sin omisiones ni fallos.
 - Versión 0.14 (2026-10-24): cuatro correcciones de revisión y ejecución completa de 246 pruebas sin omisiones; suite habitual de 233 pruebas y trece locales omitidas por defecto.
+- Versión 0.15 (2026-10-24): cálculo, aceptación y recuperación de una propuesta parcial desde la Samsung SM-X210, conservando el escenario anterior en otra base de datos.
