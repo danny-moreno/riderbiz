@@ -883,3 +883,39 @@ Resultados:
 Alcance: navegación y ciclo de vida de la pantalla con un adaptador de prueba. La sección 29 comprueba por separado el cierre HTTP al cancelar. No constituye una prueba integrada de navegación con HTTP real ni demuestra la interrupción del trabajo interno de VROOM.
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
+
+## 31. Volúmenes sintéticos de 100 a 150 paquetes
+
+Se añadió un generador independiente con escenarios de 100 paquetes/100 paradas, 125/125, 150/150, 150/110 y 150/60.
+
+Todos los paquetes representan entregas. Las coordenadas forman una cuadrícula sintética compacta en Pamplona. El servicio se fija en 60 segundos por paquete como hipótesis de prueba, sin calibración operativa.
+
+Cobertura:
+- 15 casos de integridad y conversión: cinco distribuciones al inicio, con aproximadamente la mitad completada y con todas las entregas completadas.
+- Una prueba de dimensiones inválidas.
+- Diez pruebas con VROOM y OSRM reales: cinco distribuciones al inicio y con aproximadamente la mitad completada.
+- Verificación de identificadores, asociación entre paquetes y paradas, inclusión de todas las paradas pendientes y servicio acumulado.
+- Coherencia de distancia y conducción entre los tramos y las métricas de la propuesta.
+
+Resultados de las rutas iniciales en la ejecución conjunta:
+
+| Paquetes | Paradas | Cálculo observado (ms) | Distancia (m) |
+|---|---|---|---|
+| 100 | 100 | 91.000 | 10828 |
+| 125 | 125 | 95.314 | 13137 |
+| 150 | 150 | 117.763 | 16739 |
+| 150 | 110 | 79.492 | 13129 |
+| 150 | 60 | 42.483 | 7347 |
+
+Con 150 paquetes distribuidos entre 60 paradas, completar los primeros 75 paquetes mantiene las 60 paradas activas porque todas conservan entregas pendientes. El servicio restante se reduce de 9000 a 4500 segundos.
+
+Validación conjunta:
+- Flutter analyze sin incidencias.
+- 274 pruebas superadas, ninguna omitida, con RUN_LOCAL_VROOM=true y concurrencia 1.
+- git diff --check sin incidencias.
+
+Alcance: las pruebas de progreso reconstruyen solicitudes con estados sintéticos; no ejecutan confirmaciones persistentes de entrega. Los tiempos son observaciones individuales en el Mac, no percentiles ni mediciones en tablet. No validan una jornada real, posición cambiante del repartidor, tráfico, restricciones horarias, incidencias de entrega, persistencia ni contabilidad de 100–150 paquetes.
+
+Siguientes fases: confirmaciones y recuperación persistente, prevención de duplicados contables, fallos durante la jornada y evaluación en tablet.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
