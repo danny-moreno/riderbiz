@@ -1,5 +1,9 @@
 import 'dart:convert';
 
+import 'package:riderbiz_mobile/theme/riderbiz_theme.dart';
+
+import 'package:riderbiz_mobile/features/dashboard/dashboard_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:riderbiz_mobile/scanner_screen.dart';
@@ -7,7 +11,21 @@ import 'package:riderbiz_mobile/location_validation_service.dart';
 import 'package:riderbiz_mobile/features/route_optimization/route_validation_screen.dart';
 
 void main() {
-  runApp(RiderBizValidationApp(store: LocalPackageStore()));
+  final store = LocalPackageStore();
+  const approvedUi = bool.fromEnvironment('APPROVED_UI');
+  if (approvedUi) {
+    runApp(
+      MaterialApp(
+        title: 'RiderBiz',
+        theme: riderBizTheme(),
+        home: DashboardScreen(
+          validationBuilder: (_) => PackageValidationScreen(store: store),
+        ),
+      ),
+    );
+  } else {
+    runApp(RiderBizValidationApp(store: store));
+  }
 }
 
 enum DeliveryStatus { pending, delivered }
