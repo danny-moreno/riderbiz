@@ -823,3 +823,25 @@ Resultado: superado para agotamiento del tiempo de espera y recuperación poster
 Alcance: el adaptador tiene configurado un límite de 40 segundos; no se registró una medición independiente del tiempo observado. VROOM se pausó antes de iniciar la solicitud. Esta prueba no valida una interrupción provocada después de iniciar la solicitud, cancelación manual, fallos de guardado ni uso en campo.
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
+
+## 28. Salida de pantalla durante un cálculo en tablet física
+
+Validación realizada el 2026-10-24 en Samsung SM-X210 conectada mediante USB, utilizando la base separada del escenario de entregas parciales.
+
+Estado inicial: STOP-A completada, STOP-B pendiente y una ruta parcial previamente aceptada y guardada.
+
+Procedimiento y resultados observados:
+
+1. Se pausó VROOM mediante Docker Compose.
+2. Se inició un cálculo desde la tablet.
+3. Mientras aparecía «Calculando…», se volvió a la pantalla principal mediante la flecha atrás, antes del límite de espera configurado.
+4. Al entrar nuevamente en rutas, se recuperó la ruta aceptada, STOP-B continuó pendiente y el botón de cálculo estaba disponible.
+5. Se reanudó VROOM.
+6. Un nuevo cálculo obtuvo una propuesta únicamente para STOP-B.
+7. No se aceptó la propuesta ni se confirmó STOP-B.
+
+Resultado: superado para navegación fuera de la pantalla durante un cálculo, recuperación del estado guardado y cálculo posterior.
+
+Alcance: comprobación manual del comportamiento visible. No se instrumentó la petición HTTP para verificar su cancelación efectiva ni se comprobó la interrupción del trabajo en el servidor. No equivale a muerte del proceso, cierre forzado ni fallo de guardado.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
