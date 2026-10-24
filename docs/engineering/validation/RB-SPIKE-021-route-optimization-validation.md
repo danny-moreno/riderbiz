@@ -576,11 +576,24 @@ Con ambas entregas completadas, se comprobó en la tablet el mensaje «No quedan
 
 El cálculo utiliza todavía un origen sintético fijo. No se ha comprobado en la tablet el cálculo real con una entrega completada y otra pendiente. Ese caso cuenta con una prueba de pantalla con motor simulado.
 
+### 18.10 Correcciones identificadas durante la revisión
+
+La revisión del código identificó cuatro casos límite, reproducidos mediante pruebas de regresión y corregidos el 2026-10-24:
+
+- Rechazo de ventanas caducadas antes de convertir sus tiempos a segundos, incluido un vencimiento 500 ms anterior a departureAt.
+- Cómputo del origen y del destino explícito dentro del límite local de 250 ubicaciones. El conversor permite hasta 249 paradas sin destino explícito y 248 con él.
+- Redondeo del servicio por parada en el coordinador segmentado, después de sumar las tareas de esa parada, siguiendo el criterio utilizado en las solicitudes VROOM.
+- Comprobación de que el servicio total de la respuesta coincide con la suma del servicio de los trabajos enviados.
+
+Tras las correcciones se ejecutó la suite completa con servicios locales: 246 pruebas superadas, ninguna omitida, en aproximadamente 15 segundos.
+
+Esta ejecución no amplía el alcance de las pruebas físicas ni valida por sí sola el uso en producción.
+
 ## 19. Pruebas automatizadas
 
 Estado de la suite habitual al registrar esta fase:
 
-- 229 pruebas superadas.
+- 233 pruebas superadas.
 - Trece pruebas locales omitidas por defecto.
 - Análisis estático sin incidencias.
 
@@ -620,6 +633,7 @@ fvm flutter test \
 Resultado: 242 pruebas superadas, ninguna omitida, en aproximadamente 16 segundos. Incluye las 229 pruebas habituales y las 13 pruebas locales activadas explícitamente.
 
 Esta ejecución confirma el resultado conjunto de la suite en el entorno local descrito; no amplía por sí sola el alcance de las validaciones de campo.
+Tras las correcciones de la sección 18.10, se repitió la ejecución el 2026-10-24: 246 pruebas superadas, ninguna omitida, en aproximadamente 15 segundos.
 
 ## 20. Privacidad y almacenamiento
 
@@ -678,6 +692,10 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `6e3b1c4` | Vínculo entre paradas sintéticas y confirmación contable |
 | `f3c92bd` | Confirmación y recuperación de entregas desde la pantalla |
 | `b8ff810` | Cálculo de pendientes y bloqueo al completar las entregas |
+| `f1613d4` | Rechazo de ventanas caducadas antes del redondeo |
+| `23f5e41` | Inclusión del destino explícito en el límite de ubicaciones |
+| `07e9786` | Redondeo del servicio por parada en rutas segmentadas |
+| `ed02a48` | Contraste del servicio devuelto con los trabajos solicitados |
 
 ## 22. Validaciones pendientes
 
@@ -732,3 +750,4 @@ La Issue #21 permanece abierta.
 - Versión 0.11 (2026-10-24): aceptación y persistencia de rutas, migraciones al esquema 4 y conservación de la ruta ante desconexión; 223 pruebas superadas y trece locales omitidas por defecto.
 - Versión 0.12 (2026-10-24): confirmación persistente de entregas sintéticas y cálculo de pendientes; 229 pruebas superadas y trece locales omitidas por defecto.
 - Versión 0.13 (2026-10-24): ejecución conjunta de 242 pruebas, incluidas las trece pruebas con servicios locales, sin omisiones ni fallos.
+- Versión 0.14 (2026-10-24): cuatro correcciones de revisión y ejecución completa de 246 pruebas sin omisiones; suite habitual de 233 pruebas y trece locales omitidas por defecto.
