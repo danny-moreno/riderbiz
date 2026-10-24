@@ -58,6 +58,23 @@ class TestVroomAdapter extends VroomRouteOptimizationAdapter {
       );
     }
 
+    final serviceByStop = <String, int>{};
+
+    for (final task in request.plan.pendingTasks) {
+      serviceByStop.update(
+        task.stopId,
+        (value) => value + task.serviceDuration.inMicroseconds,
+        ifAbsent: () => task.serviceDuration.inMicroseconds,
+      );
+    }
+
+    final serviceSeconds = serviceByStop.values.fold<int>(
+      0,
+      (total, microseconds) =>
+          total +
+          (microseconds + Duration.microsecondsPerSecond - 1) ~/
+              Duration.microsecondsPerSecond,
+    );
     cancelAfterCall?.cancel();
 
     return RouteCandidate(
@@ -66,10 +83,7 @@ class TestVroomAdapter extends VroomRouteOptimizationAdapter {
       metrics: RouteMetrics(
         distanceMeters: legs.length * 100,
         travelDuration: Duration(seconds: legs.length * 10),
-        serviceDuration: request.plan.pendingTasks.fold<Duration>(
-          Duration.zero,
-          (total, task) => total + task.serviceDuration,
-        ),
+        serviceDuration: Duration(seconds: serviceSeconds),
         calculationDuration: Duration.zero,
       ),
       explanation: const OptimizationExplanation(summary: 'Synthetic segment.'),
@@ -124,6 +138,7 @@ void main() {
     Set<String> completed = const {},
     bool withWindow = false,
     Duration timeout = const Duration(seconds: 5),
+    Duration serviceDuration = const Duration(seconds: 120),
   }) {
     final departure = DateTime.utc(2026, 10, 23, 8);
     const ids = ['A', 'B', 'C', 'D', 'E'];
@@ -154,7 +169,7 @@ void main() {
                   ? RouteTaskStatus.completed
                   : RouteTaskStatus.pending,
               priority: RoutePriority.normal,
-              serviceDuration: const Duration(seconds: 120),
+              serviceDuration: serviceDuration,
               timeWindow: withWindow
                   ? RouteTimeWindow(
                       startsAt: departure,
@@ -202,6 +217,23 @@ void main() {
       expect(vroom.requests, hasLength(1));
       expect(vroom.destinations.single, isNull);
       expect(osrm.connections, isEmpty);
+      expectContinuous(result);
+    });
+
+    test('rounds service per stop including a locked boundary', () async {
+      final input = request(
+        locked: {'C'},
+        serviceDuration: const Duration(milliseconds: 1500),
+      );
+
+      final result = await adapter.optimize(input);
+
+      expect(result.metrics.serviceDuration, const Duration(seconds: 10));
+      expect(result.metrics.totalDuration, const Duration(seconds: 60));
+      expect(
+        vroom.requests.last.departureAt,
+        input.departureAt.add(const Duration(seconds: 36)),
+      );
       expectContinuous(result);
     });
 

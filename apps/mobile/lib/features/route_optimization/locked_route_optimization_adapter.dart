@@ -53,10 +53,16 @@ class LockedRouteOptimizationAdapter implements RouteOptimizationPort {
     }
 
     Duration serviceAt(String stopId) {
-      return tasksByStop[stopId]!.fold<Duration>(
-        Duration.zero,
-        (total, task) => total + task.serviceDuration,
+      final microseconds = tasksByStop[stopId]!.fold<int>(
+        0,
+        (total, task) => total + task.serviceDuration.inMicroseconds,
       );
+
+      final seconds =
+          (microseconds + Duration.microsecondsPerSecond - 1) ~/
+          Duration.microsecondsPerSecond;
+
+      return Duration(seconds: seconds);
     }
 
     try {
@@ -123,9 +129,9 @@ class LockedRouteOptimizationAdapter implements RouteOptimizationPort {
             _reject('A segment returned an unexpected number of legs.');
           }
 
-          final expectedService = segmentTasks.fold<Duration>(
+          final expectedService = segment.stopIds.fold<Duration>(
             Duration.zero,
-            (total, task) => total + task.serviceDuration,
+            (total, stopId) => total + serviceAt(stopId),
           );
 
           if (candidate.metrics.serviceDuration != expectedService) {
@@ -204,9 +210,9 @@ class LockedRouteOptimizationAdapter implements RouteOptimizationPort {
         Duration.zero,
         (total, leg) => total + leg.duration,
       );
-      final serviceDuration = request.plan.pendingTasks.fold<Duration>(
+      final serviceDuration = tasksByStop.keys.fold<Duration>(
         Duration.zero,
-        (total, task) => total + task.serviceDuration,
+        (total, stopId) => total + serviceAt(stopId),
       );
 
       if (elapsedRouteTime != travelDuration + serviceDuration) {
