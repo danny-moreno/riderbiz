@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riderbiz_mobile/data/local/riderbiz_database.dart'
     show RiderBizDatabase;
 import 'package:riderbiz_mobile/features/dashboard/dashboard_screen.dart';
+import 'package:riderbiz_mobile/features/daily_session/synthetic_daily_session_service.dart';
 import 'package:riderbiz_mobile/features/delivery_accounting/delivery_accounting_service.dart';
 import 'package:riderbiz_mobile/features/route_optimization/synthetic_route_delivery_service.dart';
 import 'package:riderbiz_mobile/theme/riderbiz_theme.dart';
@@ -22,8 +23,9 @@ void main() {
         try {
           await tester.runAsync(() async {
             await SyntheticRouteDeliveryService(database).prepare();
+            await SyntheticDailySessionService(database).prepare();
             await accounting.confirmDelivery(
-              packageId: 'RB-SYN-ROUTE-A',
+              packageId: 'PACKAGE-DAILY-001',
               eventId: 'DASHBOARD-EVENT-A',
               deliveredAt: DateTime.utc(2026, 10, 24, 10),
             );
@@ -43,10 +45,10 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.text('de 2'), findsOneWidget);
+          expect(find.text('de 150'), findsOneWidget);
           expect(find.text('1'), findsOneWidget);
-          expect(find.text('0,01 €'), findsOneWidget);
-          expect(find.text('RB-SYN-ROUTE-B'), findsOneWidget);
+          expect(find.text('1,20 €'), findsOneWidget);
+          expect(find.text('PACKAGE-DAILY-002'), findsOneWidget);
           expect(tester.takeException(), isNull);
 
           final validation = find.widgetWithText(
@@ -60,7 +62,7 @@ void main() {
 
           await tester.runAsync(() async {
             await accounting.confirmDelivery(
-              packageId: 'RB-SYN-ROUTE-B',
+              packageId: 'PACKAGE-DAILY-002',
               eventId: 'DASHBOARD-EVENT-B',
               deliveredAt: DateTime.utc(2026, 10, 24, 11),
             );
@@ -70,9 +72,9 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(find.text('2'), findsOneWidget);
-          expect(find.text('0,02 €'), findsOneWidget);
-          expect(find.text('Sin entregas pendientes'), findsOneWidget);
-          expect(find.text('RB-SYN-ROUTE-B'), findsNothing);
+          expect(find.text('2,40 €'), findsOneWidget);
+          expect(find.text('PACKAGE-DAILY-003'), findsOneWidget);
+          expect(find.text('PACKAGE-DAILY-002'), findsNothing);
           expect(tester.takeException(), isNull);
 
           final events = await tester.runAsync(

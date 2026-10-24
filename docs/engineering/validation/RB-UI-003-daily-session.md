@@ -45,3 +45,23 @@ El dashboard continúa mostrando el escenario anterior de dos paquetes; sus indi
 La recuperación tras cerrar y reabrir la aplicación con esta pantalla queda pendiente de comprobar.
 
 La issue #21 permanece abierta y ADR-004 no cambia de estado.
+
+## Dashboard conectado a la jornada diaria
+
+El dashboard consulta la base separada de la jornada sintética de 150 paquetes. «Abrir jornada» y «Operaciones» permiten acceder a esa jornada. El escenario anterior sigue disponible mediante «Prueba anterior · 2 paquetes».
+
+Validación manual en Samsung SM-X210:
+- El dashboard muestra el progreso de la jornada diaria.
+- Ambos accesos abren la jornada y conservan su progreso.
+- El escenario anterior de dos paquetes continúa accesible.
+- Al regresar al inicio, los indicadores corresponden a la jornada diaria.
+- Tras cerrar desde aplicaciones recientes y reabrir, se conservan la ruta aceptada y las entregas registradas.
+
+Esta comprobación de reapertura normal no acredita muerte forzada del proceso. Este apartado actualiza las limitaciones anteriores sobre los indicadores del dashboard y la reapertura.
+
+Validación automatizada:
+- Tres pruebas del dashboard superadas.
+- Análisis estático sin incidencias.
+- Suite habitual previa al último ajuste de accesos: 280 pruebas superadas y 24 omitidas.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
