@@ -9,7 +9,12 @@ void main() {
   const mapper = VroomResponseMapper();
 
   final mappedRequest = VroomMappedRequest(
-    payload: {},
+    payload: {
+      'jobs': [
+        {'id': 1, 'service': 120},
+        {'id': 2, 'service': 120},
+      ],
+    },
     stopIdsByJobId: {1: 'STOP-A', 2: 'STOP-B'},
   );
 
@@ -133,7 +138,7 @@ void main() {
       steps(response).last['arrival'] = 691;
 
       final requestWithEnd = VroomMappedRequest(
-        payload: {},
+        payload: mappedRequest.payload,
         stopIdsByJobId: {1: 'STOP-A', 2: 'STOP-B'},
         hasExplicitEnd: true,
       );
@@ -168,7 +173,7 @@ void main() {
       final candidate = mapper.map(
         response: validResponse(),
         mappedRequest: VroomMappedRequest(
-          payload: {},
+          payload: mappedRequest.payload,
           stopIdsByJobId: {1: 'STOP-A', 2: 'STOP-B'},
           hasExplicitEnd: true,
         ),
@@ -199,7 +204,7 @@ void main() {
         () => mapper.map(
           response: response,
           mappedRequest: VroomMappedRequest(
-            payload: {},
+            payload: mappedRequest.payload,
             stopIdsByJobId: {1: 'STOP-A', 2: 'STOP-B'},
             hasExplicitEnd: true,
           ),
@@ -252,6 +257,14 @@ void main() {
     test('rejects a missing departure arrival', () {
       final response = validResponse();
       (steps(response).first as Map<String, dynamic>).remove('arrival');
+
+      expectInvalid(response);
+    });
+    test('rejects service totals that differ from the requested jobs', () {
+      final response = validResponse();
+
+      route(response)['service'] = 0;
+      steps(response).last['arrival'] = 351;
 
       expectInvalid(response);
     });

@@ -141,6 +141,21 @@ class VroomResponseMapper {
     _checkViolations(last['violations']);
 
     final service = _number(route['service'], 'service duration');
+
+    final requestedJobs = _list(
+      mappedRequest.payload['jobs'],
+      'requested jobs',
+    );
+
+    final expectedService = requestedJobs.fold<double>(0, (total, value) {
+      final job = _object(value, 'requested job');
+      return total + _number(job['service'], 'requested service');
+    });
+
+    if (service != expectedService) {
+      _reject('Route service does not match the requested jobs.');
+    }
+
     final waiting = _number(route['waiting_time'], 'waiting duration');
     final setup = _number(route['setup'], 'setup duration');
     final departureDelay = _number(first['arrival'], 'departure delay');
