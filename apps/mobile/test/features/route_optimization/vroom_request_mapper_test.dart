@@ -235,6 +235,73 @@ void main() {
       ]);
     });
 
+    test('rejects 249 stops when an explicit end exceeds the limit', () {
+      final input = RouteOptimizationRequest(
+        plan: RoutePlan(
+          id: 'ROUTE-SYN-LOCATION-LIMIT',
+          currentOrder: [
+            for (var index = 0; index < 249; index++) 'STOP-$index',
+          ],
+          stops: [
+            for (var index = 0; index < 249; index++)
+              OperationalStop(
+                id: 'STOP-$index',
+                coordinate: RouteCoordinate(
+                  latitude: 42.81 + index * 0.00001,
+                  longitude: -1.64,
+                ),
+                taskIds: ['TASK-$index'],
+              ),
+          ],
+          tasks: [
+            for (var index = 0; index < 249; index++)
+              task(id: 'TASK-$index', stopId: 'STOP-$index'),
+          ],
+        ),
+        currentLocation: const RouteCoordinate(
+          latitude: 42.80,
+          longitude: -1.65,
+        ),
+        departureAt: departure,
+        timeout: const Duration(seconds: 10),
+      );
+
+      expect(jobs(mapper.map(input)), hasLength(249));
+
+      final boundaryInput = RouteOptimizationRequest(
+        plan: RoutePlan(
+          id: 'ROUTE-SYN-VALID-LOCATION-LIMIT',
+          currentOrder: input.plan.currentOrder.take(248).toList(),
+          stops: input.plan.stops.take(248).toList(),
+          tasks: input.plan.tasks.take(248).toList(),
+        ),
+        currentLocation: input.currentLocation,
+        departureAt: input.departureAt,
+        timeout: input.timeout,
+      );
+
+      expect(
+        jobs(
+          mapper.map(
+            boundaryInput,
+            endLocation: const RouteCoordinate(
+              latitude: 42.82,
+              longitude: -1.63,
+            ),
+          ),
+        ),
+        hasLength(248),
+      );
+
+      expect(
+        () => mapper.map(
+          input,
+          endLocation: const RouteCoordinate(latitude: 42.82, longitude: -1.63),
+        ),
+        invalidRequest(),
+      );
+    });
+
     test('rejects a window that expired less than one second ago', () {
       expect(
         () => mapper.map(

@@ -38,8 +38,13 @@ class VroomRequestMapper {
       _reject('Walking clusters require a separate routing strategy.');
     }
 
-    if (activeStops.length > 249) {
-      _reject('The local routing limit allows 249 stops plus the start.');
+    final locationCount =
+        activeStops.length + 1 + (endLocation == null ? 0 : 1);
+
+    if (locationCount > 250) {
+      _reject(
+        'The local routing limit allows 250 locations including start and end.',
+      );
     }
 
     final tasksByStop = <String, List<RouteTask>>{};
