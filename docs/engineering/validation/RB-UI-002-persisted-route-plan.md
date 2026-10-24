@@ -30,6 +30,13 @@
 
 La pantalla continúa utilizando dos entregas sintéticas y un origen fijo. No constituye una interfaz de jornada para 100–500 paquetes ni valida navegación real.
 
-La recuperación tras cierre completo con esta integración queda pendiente de comprobar.
+Validación manual adicional del 2026-10-25 en Samsung SM-X210:
+- Cierre desde aplicaciones recientes y reapertura desde el icono.
+- Dashboard conserva 1 entrega de 2 y 0,01 EUR ficticios.
+- Se recuperan la ruta aceptada y STOP-B pendiente.
+- El nuevo cálculo incluye únicamente STOP-B.
+- No se aceptó la propuesta ni se confirmó STOP-B.
+
+Esta comprobación valida la reapertura normal; no acredita muerte forzada del proceso.
 
 La issue #21 permanece abierta y ADR-004 no cambia de estado.
