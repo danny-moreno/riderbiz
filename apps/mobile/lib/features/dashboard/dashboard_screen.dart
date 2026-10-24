@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../daily_session/daily_session_screen.dart';
+import '../daily_session/synthetic_daily_session_service.dart';
 
 import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
@@ -40,7 +41,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _database =
         widget.database ??
-        RiderBizDatabase(name: 'riderbiz_partial_delivery_validation');
+        RiderBizDatabase(name: SyntheticDailySessionService.databaseName);
     _load();
   }
 
@@ -53,7 +54,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final packages =
           await (_database.select(_database.syntheticPackages)
                 ..where(
-                  (row) => row.deliveryRunId.equals('RUN-SYN-ROUTE-TABLET'),
+                  (row) => row.deliveryRunId.equals(
+                    SyntheticDailySessionService.runId,
+                  ),
                 )
                 ..orderBy([(row) => OrderingTerm.asc(row.id)]))
               .get();
@@ -253,17 +256,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 const SizedBox(height: 20),
                                 FilledButton(
                                   onPressed: () => _open(
-                                    (_) => const RouteValidationScreen(
-                                      databaseName: 'riderbiz_partial_delivery_validation',
-                                    ),
+                                    (_) =>
+                                        DailySessionScreen(database: _database),
                                   ),
-                                  child: const Text('Abrir prueba de ruta'),
+                                  child: const Text('Abrir jornada'),
                                 ),
                               ],
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
+                        OutlinedButton.icon(
+                          onPressed: () => _open(
+                            (_) => const RouteValidationScreen(
+                              databaseName:
+                                  'riderbiz_partial_delivery_validation',
+                            ),
+                          ),
+                          icon: const Icon(Icons.route_outlined),
+                          label: const Text('Prueba anterior · 2 paquetes'),
+                        ),
+                        const SizedBox(height: 12),
                         OutlinedButton.icon(
                           onPressed: () => _open(widget.validationBuilder),
                           icon: const Icon(Icons.science_outlined),
@@ -288,7 +301,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onDestinationSelected: (index) {
           if (index == 0) return;
           if (index == 1) {
-            _open((_) => const DailySessionScreen());
+            _open((_) => DailySessionScreen(database: _database));
             return;
           }
           ScaffoldMessenger.of(context).showSnackBar(
