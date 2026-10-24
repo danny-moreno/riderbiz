@@ -235,6 +235,24 @@ void main() {
       ]);
     });
 
+    test('rejects a window that expired less than one second ago', () {
+      expect(
+        () => mapper.map(
+          request(
+            tasks: [
+              task(
+                window: RouteTimeWindow(
+                  startsAt: departure.subtract(const Duration(seconds: 2)),
+                  endsAt: departure.subtract(const Duration(milliseconds: 500)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        invalidRequest(),
+      );
+    });
+
     test('rejects an expired time window', () {
       expect(
         () => mapper.map(

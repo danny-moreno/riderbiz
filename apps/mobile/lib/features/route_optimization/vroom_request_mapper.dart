@@ -89,6 +89,10 @@ class VroomRequestMapper {
       };
 
       if (windowStart != null && windowEnd != null) {
+        if (windowEnd.isBefore(request.departureAt)) {
+          _reject('A stop has an expired time window.');
+        }
+
         var startSeconds = _ceilSeconds(
           windowStart.difference(request.departureAt).inMicroseconds,
         );
