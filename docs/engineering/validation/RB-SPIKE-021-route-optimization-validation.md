@@ -800,3 +800,26 @@ Resultado: superado para indisponibilidad del servicio antes de iniciar una soli
 Alcance: cierre desde aplicaciones recientes, sin borrado de datos. Esta prueba no valida interrupciones durante una solicitud, muerte forzada del proceso, fallos de guardado ni uso en campo.
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
+
+## 27. Tiempo de espera agotado y recuperación en tablet física
+
+Validación realizada el 2026-10-24 en Samsung SM-X210 conectada mediante USB, utilizando la base separada del escenario de entregas parciales.
+
+Estado inicial: STOP-A completada, STOP-B pendiente y una ruta parcial previamente aceptada y guardada.
+
+Procedimiento y resultados observados:
+
+1. Se pausó VROOM mediante Docker Compose, manteniendo OSRM activo.
+2. Se solicitó una propuesta desde la tablet y apareció el estado de cálculo.
+3. La aplicación mostró «El cálculo superó el tiempo disponible.», terminó el indicador y volvió a habilitar el botón de cálculo.
+4. La ruta aceptada conservó sus datos y STOP-B continuó pendiente.
+5. Se reanudó VROOM. Inicialmente Docker mostró el estado unhealthy.
+6. Un nuevo cálculo obtuvo una propuesta únicamente para STOP-B y desapareció el error anterior.
+7. La comprobación posterior de Docker confirmó VROOM healthy y OSRM activo.
+8. No se aceptó la nueva propuesta ni se confirmó STOP-B.
+
+Resultado: superado para agotamiento del tiempo de espera y recuperación posterior.
+
+Alcance: el adaptador tiene configurado un límite de 40 segundos; no se registró una medición independiente del tiempo observado. VROOM se pausó antes de iniciar la solicitud. Esta prueba no valida una interrupción provocada después de iniciar la solicitud, cancelación manual, fallos de guardado ni uso en campo.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
