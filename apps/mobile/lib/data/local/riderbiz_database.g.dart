@@ -2954,6 +2954,286 @@ class DeliveryEventsCompanion extends UpdateCompanion<DeliveryEvent> {
   }
 }
 
+class $AcceptedRouteSnapshotsTable extends AcceptedRouteSnapshots
+    with TableInfo<$AcceptedRouteSnapshotsTable, AcceptedRouteSnapshot> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AcceptedRouteSnapshotsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _routeIdMeta = const VerificationMeta(
+    'routeId',
+  );
+  @override
+  late final GeneratedColumn<String> routeId = GeneratedColumn<String>(
+    'route_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _snapshotJsonMeta = const VerificationMeta(
+    'snapshotJson',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotJson = GeneratedColumn<String>(
+    'snapshot_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _acceptedAtMeta = const VerificationMeta(
+    'acceptedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> acceptedAt = GeneratedColumn<DateTime>(
+    'accepted_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [routeId, snapshotJson, acceptedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'accepted_route_snapshots';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AcceptedRouteSnapshot> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('route_id')) {
+      context.handle(
+        _routeIdMeta,
+        routeId.isAcceptableOrUnknown(data['route_id']!, _routeIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_routeIdMeta);
+    }
+    if (data.containsKey('snapshot_json')) {
+      context.handle(
+        _snapshotJsonMeta,
+        snapshotJson.isAcceptableOrUnknown(
+          data['snapshot_json']!,
+          _snapshotJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotJsonMeta);
+    }
+    if (data.containsKey('accepted_at')) {
+      context.handle(
+        _acceptedAtMeta,
+        acceptedAt.isAcceptableOrUnknown(data['accepted_at']!, _acceptedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_acceptedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {routeId};
+  @override
+  AcceptedRouteSnapshot map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AcceptedRouteSnapshot(
+      routeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}route_id'],
+      )!,
+      snapshotJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_json'],
+      )!,
+      acceptedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}accepted_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AcceptedRouteSnapshotsTable createAlias(String alias) {
+    return $AcceptedRouteSnapshotsTable(attachedDatabase, alias);
+  }
+}
+
+class AcceptedRouteSnapshot extends DataClass
+    implements Insertable<AcceptedRouteSnapshot> {
+  final String routeId;
+  final String snapshotJson;
+  final DateTime acceptedAt;
+  const AcceptedRouteSnapshot({
+    required this.routeId,
+    required this.snapshotJson,
+    required this.acceptedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['route_id'] = Variable<String>(routeId);
+    map['snapshot_json'] = Variable<String>(snapshotJson);
+    map['accepted_at'] = Variable<DateTime>(acceptedAt);
+    return map;
+  }
+
+  AcceptedRouteSnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return AcceptedRouteSnapshotsCompanion(
+      routeId: Value(routeId),
+      snapshotJson: Value(snapshotJson),
+      acceptedAt: Value(acceptedAt),
+    );
+  }
+
+  factory AcceptedRouteSnapshot.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AcceptedRouteSnapshot(
+      routeId: serializer.fromJson<String>(json['routeId']),
+      snapshotJson: serializer.fromJson<String>(json['snapshotJson']),
+      acceptedAt: serializer.fromJson<DateTime>(json['acceptedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'routeId': serializer.toJson<String>(routeId),
+      'snapshotJson': serializer.toJson<String>(snapshotJson),
+      'acceptedAt': serializer.toJson<DateTime>(acceptedAt),
+    };
+  }
+
+  AcceptedRouteSnapshot copyWith({
+    String? routeId,
+    String? snapshotJson,
+    DateTime? acceptedAt,
+  }) => AcceptedRouteSnapshot(
+    routeId: routeId ?? this.routeId,
+    snapshotJson: snapshotJson ?? this.snapshotJson,
+    acceptedAt: acceptedAt ?? this.acceptedAt,
+  );
+  AcceptedRouteSnapshot copyWithCompanion(
+    AcceptedRouteSnapshotsCompanion data,
+  ) {
+    return AcceptedRouteSnapshot(
+      routeId: data.routeId.present ? data.routeId.value : this.routeId,
+      snapshotJson: data.snapshotJson.present
+          ? data.snapshotJson.value
+          : this.snapshotJson,
+      acceptedAt: data.acceptedAt.present
+          ? data.acceptedAt.value
+          : this.acceptedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AcceptedRouteSnapshot(')
+          ..write('routeId: $routeId, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('acceptedAt: $acceptedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(routeId, snapshotJson, acceptedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AcceptedRouteSnapshot &&
+          other.routeId == this.routeId &&
+          other.snapshotJson == this.snapshotJson &&
+          other.acceptedAt == this.acceptedAt);
+}
+
+class AcceptedRouteSnapshotsCompanion
+    extends UpdateCompanion<AcceptedRouteSnapshot> {
+  final Value<String> routeId;
+  final Value<String> snapshotJson;
+  final Value<DateTime> acceptedAt;
+  final Value<int> rowid;
+  const AcceptedRouteSnapshotsCompanion({
+    this.routeId = const Value.absent(),
+    this.snapshotJson = const Value.absent(),
+    this.acceptedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AcceptedRouteSnapshotsCompanion.insert({
+    required String routeId,
+    required String snapshotJson,
+    required DateTime acceptedAt,
+    this.rowid = const Value.absent(),
+  }) : routeId = Value(routeId),
+       snapshotJson = Value(snapshotJson),
+       acceptedAt = Value(acceptedAt);
+  static Insertable<AcceptedRouteSnapshot> custom({
+    Expression<String>? routeId,
+    Expression<String>? snapshotJson,
+    Expression<DateTime>? acceptedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (routeId != null) 'route_id': routeId,
+      if (snapshotJson != null) 'snapshot_json': snapshotJson,
+      if (acceptedAt != null) 'accepted_at': acceptedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AcceptedRouteSnapshotsCompanion copyWith({
+    Value<String>? routeId,
+    Value<String>? snapshotJson,
+    Value<DateTime>? acceptedAt,
+    Value<int>? rowid,
+  }) {
+    return AcceptedRouteSnapshotsCompanion(
+      routeId: routeId ?? this.routeId,
+      snapshotJson: snapshotJson ?? this.snapshotJson,
+      acceptedAt: acceptedAt ?? this.acceptedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (routeId.present) {
+      map['route_id'] = Variable<String>(routeId.value);
+    }
+    if (snapshotJson.present) {
+      map['snapshot_json'] = Variable<String>(snapshotJson.value);
+    }
+    if (acceptedAt.present) {
+      map['accepted_at'] = Variable<DateTime>(acceptedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AcceptedRouteSnapshotsCompanion(')
+          ..write('routeId: $routeId, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('acceptedAt: $acceptedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$RiderBizDatabase extends GeneratedDatabase {
   _$RiderBizDatabase(QueryExecutor e) : super(e);
   $RiderBizDatabaseManager get managers => $RiderBizDatabaseManager(this);
@@ -2968,6 +3248,8 @@ abstract class _$RiderBizDatabase extends GeneratedDatabase {
   late final $SyntheticPackagesTable syntheticPackages =
       $SyntheticPackagesTable(this);
   late final $DeliveryEventsTable deliveryEvents = $DeliveryEventsTable(this);
+  late final $AcceptedRouteSnapshotsTable acceptedRouteSnapshots =
+      $AcceptedRouteSnapshotsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2979,6 +3261,7 @@ abstract class _$RiderBizDatabase extends GeneratedDatabase {
     deliveryRuns,
     syntheticPackages,
     deliveryEvents,
+    acceptedRouteSnapshots,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -6026,6 +6309,191 @@ typedef $$DeliveryEventsTableProcessedTableManager =
       DeliveryEvent,
       PrefetchHooks Function({bool packageId})
     >;
+typedef $$AcceptedRouteSnapshotsTableCreateCompanionBuilder =
+    AcceptedRouteSnapshotsCompanion Function({
+      required String routeId,
+      required String snapshotJson,
+      required DateTime acceptedAt,
+      Value<int> rowid,
+    });
+typedef $$AcceptedRouteSnapshotsTableUpdateCompanionBuilder =
+    AcceptedRouteSnapshotsCompanion Function({
+      Value<String> routeId,
+      Value<String> snapshotJson,
+      Value<DateTime> acceptedAt,
+      Value<int> rowid,
+    });
+
+class $$AcceptedRouteSnapshotsTableFilterComposer
+    extends Composer<_$RiderBizDatabase, $AcceptedRouteSnapshotsTable> {
+  $$AcceptedRouteSnapshotsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get routeId => $composableBuilder(
+    column: $table.routeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get acceptedAt => $composableBuilder(
+    column: $table.acceptedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AcceptedRouteSnapshotsTableOrderingComposer
+    extends Composer<_$RiderBizDatabase, $AcceptedRouteSnapshotsTable> {
+  $$AcceptedRouteSnapshotsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get routeId => $composableBuilder(
+    column: $table.routeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get acceptedAt => $composableBuilder(
+    column: $table.acceptedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AcceptedRouteSnapshotsTableAnnotationComposer
+    extends Composer<_$RiderBizDatabase, $AcceptedRouteSnapshotsTable> {
+  $$AcceptedRouteSnapshotsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get routeId =>
+      $composableBuilder(column: $table.routeId, builder: (column) => column);
+
+  GeneratedColumn<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get acceptedAt => $composableBuilder(
+    column: $table.acceptedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$AcceptedRouteSnapshotsTableTableManager
+    extends
+        RootTableManager<
+          _$RiderBizDatabase,
+          $AcceptedRouteSnapshotsTable,
+          AcceptedRouteSnapshot,
+          $$AcceptedRouteSnapshotsTableFilterComposer,
+          $$AcceptedRouteSnapshotsTableOrderingComposer,
+          $$AcceptedRouteSnapshotsTableAnnotationComposer,
+          $$AcceptedRouteSnapshotsTableCreateCompanionBuilder,
+          $$AcceptedRouteSnapshotsTableUpdateCompanionBuilder,
+          (
+            AcceptedRouteSnapshot,
+            BaseReferences<
+              _$RiderBizDatabase,
+              $AcceptedRouteSnapshotsTable,
+              AcceptedRouteSnapshot
+            >,
+          ),
+          AcceptedRouteSnapshot,
+          PrefetchHooks Function()
+        > {
+  $$AcceptedRouteSnapshotsTableTableManager(
+    _$RiderBizDatabase db,
+    $AcceptedRouteSnapshotsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AcceptedRouteSnapshotsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$AcceptedRouteSnapshotsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$AcceptedRouteSnapshotsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> routeId = const Value.absent(),
+                Value<String> snapshotJson = const Value.absent(),
+                Value<DateTime> acceptedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AcceptedRouteSnapshotsCompanion(
+                routeId: routeId,
+                snapshotJson: snapshotJson,
+                acceptedAt: acceptedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String routeId,
+                required String snapshotJson,
+                required DateTime acceptedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AcceptedRouteSnapshotsCompanion.insert(
+                routeId: routeId,
+                snapshotJson: snapshotJson,
+                acceptedAt: acceptedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AcceptedRouteSnapshotsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$RiderBizDatabase,
+      $AcceptedRouteSnapshotsTable,
+      AcceptedRouteSnapshot,
+      $$AcceptedRouteSnapshotsTableFilterComposer,
+      $$AcceptedRouteSnapshotsTableOrderingComposer,
+      $$AcceptedRouteSnapshotsTableAnnotationComposer,
+      $$AcceptedRouteSnapshotsTableCreateCompanionBuilder,
+      $$AcceptedRouteSnapshotsTableUpdateCompanionBuilder,
+      (
+        AcceptedRouteSnapshot,
+        BaseReferences<
+          _$RiderBizDatabase,
+          $AcceptedRouteSnapshotsTable,
+          AcceptedRouteSnapshot
+        >,
+      ),
+      AcceptedRouteSnapshot,
+      PrefetchHooks Function()
+    >;
 
 class $RiderBizDatabaseManager {
   final _$RiderBizDatabase _db;
@@ -6042,4 +6510,9 @@ class $RiderBizDatabaseManager {
       $$SyntheticPackagesTableTableManager(_db, _db.syntheticPackages);
   $$DeliveryEventsTableTableManager get deliveryEvents =>
       $$DeliveryEventsTableTableManager(_db, _db.deliveryEvents);
+  $$AcceptedRouteSnapshotsTableTableManager get acceptedRouteSnapshots =>
+      $$AcceptedRouteSnapshotsTableTableManager(
+        _db,
+        _db.acceptedRouteSnapshots,
+      );
 }

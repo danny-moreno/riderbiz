@@ -1,0 +1,22 @@
+cliArgs:
+  geometry: true
+  planmode: false
+  threads: 4
+  explore: 5
+  limit: '1mb'
+  logdir: '/conf'
+  logsize: '10M'
+  maxlocations: 250
+  maxvehicles: 1
+  override: []
+  path: '/usr/local/bin/'
+  port: 3000
+  router: 'osrm'
+  timeout: 30000
+  baseurl: '/'
+
+routingServers:
+  osrm:
+    car:
+      host: 'osrm'
+      port: '5000'

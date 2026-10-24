@@ -151,6 +151,17 @@ class DeliveryEvents extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class AcceptedRouteSnapshots extends Table {
+  TextColumn get routeId => text()();
+
+  TextColumn get snapshotJson => text()();
+
+  DateTimeColumn get acceptedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {routeId};
+}
+
 @DriftDatabase(
   tables: [
     LogisticsOperators,
@@ -159,6 +170,7 @@ class DeliveryEvents extends Table {
     DeliveryRuns,
     SyntheticPackages,
     DeliveryEvents,
+    AcceptedRouteSnapshots,
   ],
 )
 class RiderBizDatabase extends _$RiderBizDatabase {
@@ -215,6 +227,9 @@ class RiderBizDatabase extends _$RiderBizDatabase {
           syntheticPackages.deliveredAt,
         );
       }
+      if (from < 4) {
+        await migrator.createTable(acceptedRouteSnapshots);
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -222,5 +237,5 @@ class RiderBizDatabase extends _$RiderBizDatabase {
   );
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 }

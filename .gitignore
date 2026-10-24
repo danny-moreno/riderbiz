@@ -54,3 +54,5 @@ coverage/
 
 # FVM Version Cache
 .fvm/
+# Route optimization: downloaded maps and generated routing data
+/tools/route-optimization/data/

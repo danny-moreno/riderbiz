@@ -6,6 +6,7 @@ import 'package:riderbiz_mobile/data/local/riderbiz_database.dart';
 import '../../generated_migrations/schema.dart';
 import '../../generated_migrations/schema_v1.dart' as v1;
 import '../../generated_migrations/schema_v2.dart' as v2;
+import '../../generated_migrations/schema_v3.dart' as v3;
 
 void main() {
   late SchemaVerifier verifier;
@@ -122,7 +123,7 @@ void main() {
       schema.newConnection(),
     );
 
-    await verifier.migrateAndValidate(migratedDatabase, 3);
+    await verifier.migrateAndValidate(migratedDatabase, 4);
 
     final migratedOperator = await (migratedDatabase.select(
       migratedDatabase.logisticsOperators,
@@ -158,4 +159,94 @@ void main() {
 
     await migratedDatabase.close();
   });
+
+  test(
+    'migrates v3 to v4 preserving data and allowing route storage',
+    () async {
+      final schema = await verifier.schemaAt(3);
+      final oldDatabase = v3.DatabaseAtV3(schema.newConnection());
+      final acceptedAt = DateTime.utc(2026, 10, 24, 8);
+      final timestamp =
+          acceptedAt.millisecondsSinceEpoch ~/ Duration.millisecondsPerSecond;
+
+      try {
+        await oldDatabase.customStatement(
+          'INSERT INTO logistics_operators (id, name, created_at) '
+          'VALUES (?, ?, ?)',
+          ['OP-SYN-V3', 'Operador sintético V3', timestamp],
+        );
+
+        await oldDatabase.customStatement(
+          'INSERT INTO delivery_runs (id, operator_id, started_at) '
+          'VALUES (?, ?, ?)',
+          ['RUN-SYN-V3', 'OP-SYN-V3', timestamp],
+        );
+
+        await oldDatabase.customStatement(
+          'INSERT INTO synthetic_packages '
+          '(id, delivery_run_id, status, external_reference, '
+          'unit_price_minor_snapshot, currency_snapshot, delivered_at, '
+          'created_at, updated_at) '
+          'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [
+            'RB-SYN-V3',
+            'RUN-SYN-V3',
+            'delivered',
+            'REF-SYN-V3',
+            125,
+            'EUR',
+            timestamp,
+            timestamp,
+            timestamp,
+          ],
+        );
+      } finally {
+        await oldDatabase.close();
+      }
+
+      final database = RiderBizDatabase.forTesting(schema.newConnection());
+
+      try {
+        await verifier.migrateAndValidate(database, 4);
+
+        final package = await (database.select(
+          database.syntheticPackages,
+        )..where((row) => row.id.equals('RB-SYN-V3'))).getSingle();
+
+        expect(package.status, 'delivered');
+        expect(package.deliveryRunId, 'RUN-SYN-V3');
+        expect(package.externalReference, 'REF-SYN-V3');
+        expect(package.unitPriceMinorSnapshot, 125);
+        expect(package.currencySnapshot, 'EUR');
+        expect(package.deliveredAt?.toUtc(), acceptedAt);
+
+        expect(
+          await database.select(database.acceptedRouteSnapshots).get(),
+          isEmpty,
+        );
+
+        const snapshot = '{"version":1,"stopOrder":["STOP-A","STOP-B"]}';
+
+        await database
+            .into(database.acceptedRouteSnapshots)
+            .insert(
+              AcceptedRouteSnapshotsCompanion(
+                routeId: const Value('ROUTE-SYN-MIGRATION'),
+                snapshotJson: const Value(snapshot),
+                acceptedAt: Value(acceptedAt),
+              ),
+            );
+
+        final restored = await database
+            .select(database.acceptedRouteSnapshots)
+            .getSingle();
+
+        expect(restored.routeId, 'ROUTE-SYN-MIGRATION');
+        expect(restored.snapshotJson, snapshot);
+        expect(restored.acceptedAt.toUtc(), acceptedAt);
+      } finally {
+        await database.close();
+      }
+    },
+  );
 }
