@@ -198,7 +198,9 @@ class _PackageValidationScreenState extends State<PackageValidationScreen> {
             onPressed: () {
               Navigator.of(context).push<void>(
                 MaterialPageRoute<void>(
-                  builder: (_) => const RouteValidationScreen(),
+                  builder: (_) => const RouteValidationScreen(
+                    databaseName: 'riderbiz_partial_delivery_validation',
+                  ),
                 ),
               );
             },

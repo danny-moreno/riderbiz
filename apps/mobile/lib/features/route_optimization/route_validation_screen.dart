@@ -11,7 +11,14 @@ import '../../data/local/riderbiz_database.dart' show RiderBizDatabase;
 import 'accepted_route_store.dart';
 
 class RouteValidationScreen extends StatefulWidget {
-  const RouteValidationScreen({super.key, this.database, this.adapter});
+  const RouteValidationScreen({
+    super.key,
+    this.database,
+    this.adapter,
+    this.databaseName = 'riderbiz',
+  });
+
+  final String databaseName;
 
   final RiderBizDatabase? database;
   final RouteOptimizationPort? adapter;
@@ -40,7 +47,7 @@ class _RouteValidationScreenState extends State<RouteValidationScreen> {
   @override
   void initState() {
     super.initState();
-    _database = widget.database ?? RiderBizDatabase();
+    _database = widget.database ?? RiderBizDatabase(name: widget.databaseName);
     _store = AcceptedRouteStore(_database);
     _deliveries = SyntheticRouteDeliveryService(_database);
     _adapter =
