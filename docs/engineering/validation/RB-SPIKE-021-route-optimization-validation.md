@@ -558,11 +558,29 @@ Tras restablecer el túnel, se obtuvo nuevamente una propuesta.
 
 Esta evidencia no valida todavía interrupciones durante una respuesta, fallos de escritura, recuperación tras cierre inesperado durante el guardado ni una jornada de reparto.
 
+### 18.9 Confirmación de entregas y cálculo de pendientes
+
+Validación realizada el 2026-10-24.
+
+Las paradas STOP-A y STOP-B se vincularon a dos paquetes sintéticos almacenados en Drift. La confirmación reutiliza DeliveryAccountingService: actualiza el paquete, conserva la tarifa aplicada y registra el evento dentro de una transacción.
+
+El escenario utiliza un operador sintético y una tarifa ficticia de 0,01 € por paquete. Estos registros no representan ingresos reales.
+
+Las pruebas automatizadas comprobaron que preparar el escenario nuevamente no reinicia las entregas, que confirmar exige una ruta aceptada y que una segunda confirmación no duplica eventos.
+
+La prueba de pantalla comprobó la recuperación del progreso y una solicitud con STOP-A completada y STOP-B pendiente. El motor simulado propuso únicamente STOP-B.
+
+En la Samsung SM-X210 se confirmaron ambas entregas. Tras cerrar y abrir la aplicación, ambas conservaron el estado Entregado y sus botones quedaron desactivados.
+
+Con ambas entregas completadas, se comprobó en la tablet el mensaje «No quedan entregas pendientes» y la desactivación del cálculo.
+
+El cálculo utiliza todavía un origen sintético fijo. No se ha comprobado en la tablet el cálculo real con una entrega completada y otra pendiente. Ese caso cuenta con una prueba de pantalla con motor simulado.
+
 ## 19. Pruebas automatizadas
 
 Estado de la suite habitual al registrar esta fase:
 
-- 223 pruebas superadas.
+- 229 pruebas superadas.
 - Trece pruebas locales omitidas por defecto.
 - Análisis estático sin incidencias.
 
@@ -643,6 +661,9 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `52b347e` | Esquema 4 y migraciones para almacenar rutas aceptadas |
 | `aae831d` | Servicio de almacenamiento del orden y las métricas aceptadas |
 | `d073b27` | Aceptación y recuperación desde la pantalla de validación |
+| `6e3b1c4` | Vínculo entre paradas sintéticas y confirmación contable |
+| `f3c92bd` | Confirmación y recuperación de entregas desde la pantalla |
+| `b8ff810` | Cálculo de pendientes y bloqueo al completar las entregas |
 
 ## 22. Validaciones pendientes
 
@@ -695,3 +716,4 @@ La Issue #21 permanece abierta.
 - Versión 0.9 (2026-10-23): fallos de clientes y rechazo de resultados fuera de plazo; 214 pruebas superadas y trece locales omitidas por defecto.
 - Versión 0.10 (2026-10-24): cálculo sintético desde tablet física y comprobación del presupuesto restante entre tramos; 215 pruebas superadas y trece locales omitidas por defecto.
 - Versión 0.11 (2026-10-24): aceptación y persistencia de rutas, migraciones al esquema 4 y conservación de la ruta ante desconexión; 223 pruebas superadas y trece locales omitidas por defecto.
+- Versión 0.12 (2026-10-24): confirmación persistente de entregas sintéticas y cálculo de pendientes; 229 pruebas superadas y trece locales omitidas por defecto.
