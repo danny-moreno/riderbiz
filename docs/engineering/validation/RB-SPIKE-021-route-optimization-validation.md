@@ -1006,3 +1006,15 @@ Ejecución conjunta del 2026-10-26: 325 pruebas superadas, ninguna omitida, con 
 Evidencia y límites: [RB-ROUTING-005 · Prioridades bajo restricciones horarias](RB-ROUTING-005-priority-time-windows.md).
 
 La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
+
+## 36. Recursos y estimación económica preliminar
+
+El 2026-10-26 se registró una instantánea de recursos de los contenedores locales y se revisaron precios, límites y condiciones públicas de GraphHopper.
+
+Se documentan supuestos de consumo y proyecciones para 1, 100 y 1.000 repartidores, distinguiendo créditos, reparto del precio de suscripción y presupuesto hipotético de operación propia.
+
+Evidencia y límites: [RB-ROUTING-006 · Recursos y estimación económica preliminar](RB-ROUTING-006-cost-and-resources.md).
+
+La documentación del bloqueo gratuito no constituye una comparación ejecutada entre proveedores. Siguen pendientes la aclaración comercial aplicable, precios Custom y el dimensionamiento de la alternativa abierta.
+
+La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
