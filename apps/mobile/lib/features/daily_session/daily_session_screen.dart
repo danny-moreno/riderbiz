@@ -24,7 +24,7 @@ class _DailySessionScreenState extends State<DailySessionScreen> {
   late final SyntheticDailySessionService _service;
   late final RouteOptimizationPort _adapter;
   RoutePlan? _plan;
-  AcceptedRouteSnapshot? _accepted;
+  SelectedRouteSnapshot? _accepted;
   RouteCandidate? _candidate;
   RouteOptimizationCancellationSignal? _signal;
   bool _busy = true;
@@ -48,7 +48,7 @@ class _DailySessionScreenState extends State<DailySessionScreen> {
 
   Future<void> _reload() async {
     final plan = await _service.loadPlan();
-    final accepted = await AcceptedRouteStore(_db).load(plan.id);
+    final accepted = await AcceptedRouteStore(_db).loadSelection(plan.id);
     if (!mounted) return;
     setState(() {
       _plan = plan;
@@ -123,6 +123,28 @@ class _DailySessionScreenState extends State<DailySessionScreen> {
         setState(() {
           _ready = false;
           _error = 'No se pudo cargar o calcular la jornada. Vuelve a abrirla.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _useUsualOrder() async {
+    if (_busy || !_ready) return;
+    setState(() {
+      _busy = true;
+      _candidate = null;
+      _error = null;
+    });
+    try {
+      await _service.useUsualOrder();
+      await _reload();
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _ready = false;
+          _error = 'No se pudo guardar el orden habitual. Vuelve a abrir.';
         });
       }
     } finally {
@@ -252,10 +274,24 @@ class _DailySessionScreenState extends State<DailySessionScreen> {
                           : _calculate,
                       child: const Text('Calcular pendientes'),
                     ),
+                    OutlinedButton(
+                      onPressed:
+                          _busy ||
+                              !_ready ||
+                              (plan?.pendingTasks.isEmpty ?? true)
+                          ? null
+                          : _useUsualOrder,
+                      child: const Text('Usar orden habitual'),
+                    ),
                     if (_accepted != null)
                       Text(
-                        'Ruta aceptada: ${_accepted!.stopOrder.length} paradas · '
-                        '${_accepted!.metrics.distanceMeters} m',
+                        _accepted!.mode == RouteSelectionMode.usual
+                            ? 'Orden habitual guardado: '
+                                  '${_accepted!.stopOrder.length} paradas · '
+                                  'sin estimaciones'
+                            : 'Ruta aceptada: '
+                                  '${_accepted!.stopOrder.length} paradas · '
+                                  '${_accepted!.metrics!.distanceMeters} m',
                       ),
                     if (candidate != null) ...[
                       Text(

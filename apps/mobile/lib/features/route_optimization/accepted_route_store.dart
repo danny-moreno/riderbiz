@@ -19,10 +19,59 @@ class AcceptedRouteSnapshot {
   final DateTime acceptedAt;
 }
 
+enum RouteSelectionMode { usual, optimized }
+
+class SelectedRouteSnapshot {
+  SelectedRouteSnapshot({
+    required this.routeId,
+    required List<String> stopOrder,
+    required this.mode,
+    required this.metrics,
+    required this.acceptedAt,
+  }) : stopOrder = List.unmodifiable(stopOrder);
+
+  final String routeId;
+  final List<String> stopOrder;
+  final RouteSelectionMode mode;
+  final RouteMetrics? metrics;
+  final DateTime acceptedAt;
+}
+
 class AcceptedRouteStore {
   const AcceptedRouteStore(this.database);
 
   final RiderBizDatabase database;
+
+  Future<void> saveUsualOrder({
+    required String routeId,
+    required List<String> stopOrder,
+    required DateTime acceptedAt,
+  }) async {
+    if (routeId.trim().isEmpty) {
+      throw ArgumentError.value(routeId, 'routeId');
+    }
+    if (stopOrder.isEmpty ||
+        stopOrder.any((id) => id.trim().isEmpty) ||
+        stopOrder.toSet().length != stopOrder.length) {
+      throw ArgumentError('The usual stop order must be nonempty and unique.');
+    }
+
+    final payload = jsonEncode({
+      'version': 2,
+      'mode': 'usual',
+      'stopOrder': stopOrder,
+    });
+
+    await database
+        .into(database.acceptedRouteSnapshots)
+        .insertOnConflictUpdate(
+          AcceptedRouteSnapshotsCompanion(
+            routeId: Value(routeId),
+            snapshotJson: Value(payload),
+            acceptedAt: Value(acceptedAt.toUtc()),
+          ),
+        );
+  }
 
   Future<void> save({
     required String routeId,
@@ -76,6 +125,64 @@ class AcceptedRouteStore {
             acceptedAt: Value(acceptedAt.toUtc()),
           ),
         );
+  }
+
+  Future<SelectedRouteSnapshot?> loadSelection(String routeId) {
+    return database.transaction(() async {
+      final row = await (database.select(
+        database.acceptedRouteSnapshots,
+      )..where((table) => table.routeId.equals(routeId))).getSingleOrNull();
+      if (row == null) return null;
+
+      final decoded = jsonDecode(row.snapshotJson);
+      if (decoded is! Map<String, dynamic>) {
+        throw const FormatException('Invalid route selection.');
+      }
+
+      if (decoded['version'] == 1) {
+        // Read the legacy format through its existing validator.
+        // Both reads share this transaction.
+        final accepted = await load(routeId);
+        if (accepted == null) {
+          throw StateError('Route selection disappeared during loading.');
+        }
+        return SelectedRouteSnapshot(
+          routeId: accepted.routeId,
+          stopOrder: accepted.stopOrder,
+          mode: RouteSelectionMode.optimized,
+          metrics: accepted.metrics,
+          acceptedAt: accepted.acceptedAt,
+        );
+      }
+
+      if (decoded['version'] != 2 ||
+          decoded['mode'] != 'usual' ||
+          decoded.keys.any(
+            (key) => !const {'version', 'mode', 'stopOrder'}.contains(key),
+          )) {
+        throw const FormatException('Unsupported route selection.');
+      }
+
+      final rawOrder = decoded['stopOrder'];
+      if (rawOrder is! List ||
+          rawOrder.isEmpty ||
+          rawOrder.any((id) => id is! String || id.trim().isEmpty)) {
+        throw const FormatException('Invalid usual stop order.');
+      }
+
+      final order = rawOrder.cast<String>();
+      if (order.toSet().length != order.length) {
+        throw const FormatException('Duplicate usual stop identifiers.');
+      }
+
+      return SelectedRouteSnapshot(
+        routeId: row.routeId,
+        stopOrder: order,
+        mode: RouteSelectionMode.usual,
+        metrics: null,
+        acceptedAt: row.acceptedAt.toUtc(),
+      );
+    });
   }
 
   Future<AcceptedRouteSnapshot?> load(String routeId) async {

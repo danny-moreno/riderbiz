@@ -77,6 +77,27 @@ class SyntheticDailySessionService {
     return plan;
   }
 
+  Future<void> useUsualOrder() {
+    return database.transaction(() async {
+      final plan = await loadPlan();
+      final order = plan.currentOrder;
+      final stopIds = plan.stops.map((stop) => stop.id).toSet();
+
+      if (order.isEmpty ||
+          order.toSet().length != order.length ||
+          order.length != stopIds.length ||
+          !order.every(stopIds.contains)) {
+        throw StateError('The usual order must contain every stop once.');
+      }
+
+      await AcceptedRouteStore(database).saveUsualOrder(
+        routeId: routeId,
+        stopOrder: order,
+        acceptedAt: DateTime.now().toUtc(),
+      );
+    });
+  }
+
   Future<void> confirmPackage(String packageId) {
     return database.transaction(() async {
       final plan = await loadPlan();
@@ -89,7 +110,8 @@ class SyntheticDailySessionService {
         throw StateError('Package is not pending.');
       }
 
-      final accepted = await AcceptedRouteStore(database).load(routeId);
+      final accepted = await AcceptedRouteStore(database)
+          .loadSelection(routeId);
       if (accepted == null || !accepted.stopOrder.contains(task.stopId)) {
         throw StateError('Accept a route containing this stop first.');
       }

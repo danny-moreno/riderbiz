@@ -726,7 +726,7 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 
 Resumen actualizado el 2026-10-26. Los apartados históricos conservan el alcance y los resultados de cada ejecución.
 
-- Demostrar la utilización de la ruta habitual sin solicitar optimización, incluida la operación local y la selección manual de paradas.
+- Ampliar la operación manual cuando sea necesario. La selección del orden sintético guardado, la confirmación de paquetes sin motor y la recuperación están comprobadas en RB-UI-004-usual-route-without-optimizer.md; no se ha validado un editor completo de secuencias ni una ruta habitual real.
 - Completar la evidencia de prioridades bajo restricciones.
 - Validar la representación y separación de grupos peatonales mediante escenarios específicos; representar un grupo no equivale a calcular un recorrido a pie.
 - Ampliar las restricciones combinadas. La estrategia segmentada conserva bloqueos, pero rechaza ventanas horarias y grupos peatonales.
@@ -934,16 +934,16 @@ La Issue permite mantener ADR-004 como PROPUESTO y entregar documentación verif
 | Escenarios sin datos personales reales | Documentado: identificadores y puntos de entrega generados sintéticamente sobre cartografía de Navarra | Mantener la trazabilidad del origen sintético |
 | Pruebas con 60, 80 y 120 tareas | Comprobado con motores locales | Conservar resultados y condiciones |
 | Dominio independiente del proveedor | Comprobado para los adaptadores implementados | No extender la conclusión a proveedores no probados |
-| Ruta habitual sin optimización | Evidencia parcial: se conserva una ruta aceptada | Probar expresamente el flujo sin solicitar optimización |
+| Ruta habitual sin optimización | Comprobado para el orden sintético guardado: selección explícita, entregas sin motor y recuperación | Mantener los límites de RB-UI-004; no equivale a un recorrido habitual real |
 | Reoptimización solo de pendientes | Comprobado en escenarios sintéticos, incluidos estados persistidos | Conservar el alcance documentado |
 | Tareas completadas y bloqueadas respetadas | Comprobado en casos específicos | Explicitar límites de restricciones combinadas |
 | Entregas y recogidas | Comprobado como visitas independientes en el motor | No equiparar a transporte con capacidad o precedencia ni a recogidas persistidas en la jornada diaria |
 | Ruta vehicular y grupos peatonales | Ruta vehicular comprobada; grupos representados en el dominio | Completar evidencia específica de agrupación y separación |
-| Fallos externos no bloquean la jornada | Recuperación y conservación comprobadas en escenarios concretos | Completar la operación habitual sin motor |
+| Fallos externos no bloquean la jornada | Comprobado en escenarios concretos, incluida confirmación de entregas en modo habitual sin motor | No extender a mapas offline, sincronización o condiciones de campo no probadas |
 | Secretos fuera del repositorio | Pendiente de revisión consolidada | Revisar código, configuración e historial pertinente sin mostrar secretos |
 | Límites y costes documentados | Límites locales comprobados; evaluación económica incompleta | Completar límites del servicio administrado y proyecciones |
 | flutter analyze sin errores | Última ejecución comunicada: sin incidencias | Registrar la ejecución final aplicable |
-| Pruebas automatizadas correctas | Última suite habitual: 286 superadas y 24 omitidas por defecto | Distinguir suite habitual de ejecución con motores locales |
+| Pruebas automatizadas correctas | Última suite habitual: 291 superadas y 24 omitidas por defecto | Distinguir suite habitual de ejecución con motores locales |
 | git diff --check sin errores | Sin incidencias en la última validación comunicada | Repetir sobre el cambio final |
 | Resultados y limitaciones documentados | Evidencia repartida entre este documento y documentos complementarios | Consolidar la conclusión y referencias |
 | Estado de ADR-004 según evidencia | Permanece PROPUESTO | No aceptar automáticamente al cerrar la Issue |
@@ -974,5 +974,15 @@ Fuentes oficiales:
 - https://www.graphhopper.com/pricing/
 - https://www.graphhopper.com/faq/what-is-one-credit/
 - https://support.graphhopper.com/support/solutions/articles/44001038156-what-happens-if-i-exceed-the-location-or-the-vehicle-limit-
+
+La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
+
+## 33. Orden habitual sin optimizador
+
+Validación automatizada y manual realizada el 2026-10-26.
+
+La jornada permite seleccionar el orden sintético almacenado y confirmar entregas sin llamar al optimizador. Conserva el progreso y la selección al reabrir, muestra ausencia de estimaciones y mantiene el orden ante un error posterior del servicio.
+
+Evidencia y límites: [RB-UI-004 · Orden habitual sin optimizador](RB-UI-004-usual-route-without-optimizer.md).
 
 La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
