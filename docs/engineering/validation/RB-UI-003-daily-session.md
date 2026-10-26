@@ -65,3 +65,33 @@ Validación automatizada:
 - Suite habitual previa al último ajuste de accesos: 280 pruebas superadas y 24 omitidas.
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
+
+## Tiempo agotado, recuperación y salida durante el cálculo
+
+Validación manual realizada el 2026-10-26 en Samsung SM-X210 conectada mediante USB, sobre la jornada sintética de 150 paquetes y 60 paradas, con una ruta previamente aceptada y entregas ya registradas.
+
+Preparación:
+- Colima y los servicios locales VROOM y OSRM iniciados.
+- Un primer intento mostró «No se pudo conectar con el servicio local».
+- Se restablecieron los puertos USB mediante adb reverse y se comprobó que un nuevo cálculo obtenía una propuesta.
+
+Tiempo de espera y recuperación:
+- Se pausó VROOM antes de iniciar otro cálculo, manteniendo OSRM activo.
+- La pantalla mostró «El cálculo superó el tiempo disponible» tras aproximadamente 40 segundos, según observación manual.
+- Finalizó el indicador y volvió a habilitarse el cálculo.
+- Los contadores y la ruta aceptada conservaron sus valores.
+- Tras reanudar VROOM y comprobar su estado healthy, un nuevo cálculo obtuvo una propuesta y desapareció el error.
+
+Salida durante el cálculo:
+- Con VROOM pausado, se inició un cálculo.
+- Se volvió al dashboard antes del límite de espera.
+- Al reabrir la jornada, se conservaron las entregas y la ruta aceptada, y el cálculo estaba disponible.
+- Tras reanudar VROOM, un nuevo cálculo obtuvo una propuesta sin errores.
+
+No se aceptaron las propuestas ni se confirmaron entregas durante estas comprobaciones.
+
+Resultado: superado para tiempo agotado, recuperación y navegación fuera de la pantalla durante el cálculo.
+
+Alcance: comprobación manual del comportamiento visible. El tiempo observado es aproximado. No se instrumentó la cancelación HTTP desde esta pantalla ni la interrupción del trabajo interno de VROOM. No valida muerte forzada del proceso ni fallos de guardado.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
