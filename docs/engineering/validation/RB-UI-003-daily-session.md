@@ -139,3 +139,26 @@ Resultados:
 Alcance: fallos controlados de sentencias SQL y recuperación en los servicios. No valida la reacción visual de la pantalla, disco lleno, corrupción de SQLite, muerte del proceso ni pérdida de alimentación.
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
+
+## Recuperación de pantalla tras fallos de guardado
+
+Validación automatizada realizada el 2026-10-26 mediante dos pruebas de pantalla con SQLite en memoria y un adaptador de optimización de prueba.
+
+Estado inicial: 150 paquetes, una entrega registrada y una ruta aceptada.
+
+Se comprueba que:
+- Un fallo al guardar la ruta o insertar el evento de entrega muestra el mensaje correspondiente.
+- Finaliza el indicador y se bloquean nuevas operaciones hasta reabrir la pantalla.
+- Se conservan íntegramente los paquetes, eventos y ruta aceptada.
+- Al retirar el fallo y reabrir, se recuperan los datos anteriores sin iniciar otro cálculo automáticamente.
+- El reintento permite aceptar la propuesta o confirmar la entrega, sin duplicar eventos.
+
+Resultados:
+- Dos pruebas específicas superadas.
+- Análisis estático sin incidencias.
+- Suite habitual: 286 pruebas superadas y 24 omitidas por defecto.
+- git diff --check sin incidencias.
+
+Alcance: comportamiento de pantalla ante fallos SQL controlados mediante triggers en una base de prueba. No valida disco lleno, corrupción de SQLite, muerte del proceso ni pérdida de alimentación.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
