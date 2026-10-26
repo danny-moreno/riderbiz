@@ -1037,3 +1037,27 @@ y un access.log de cero bytes.
 No se acredita borrado forense, limpieza inmediata al cancelar
 ni eliminación de copias anteriores.
 La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
+
+
+## 38. Métricas comparables y llamadas observadas
+
+Ejecución del 2026-10-26 documentada en
+[RB-ROUTING-008](RB-ROUTING-008-comparable-metrics.md).
+
+Se reunieron cinco repeticiones por volumen de 60, 80 y 120 tareas,
+entregas y recogidas independientes, comparación mediante el mismo
+OSRM, ahorro estimado y llamadas observadas.
+
+Los tres escenarios finalizaron correctamente, con órdenes repetibles.
+Por ejecución comparativa se observaron quince solicitudes a VROOM
+y dieciocho evaluaciones OSRM; las llamadas internas no se midieron.
+
+Las reducciones de duración total fueron 20,9749 %, 21,3720 % y
+20,5504 % frente al orden sintético inicial. No se extrapolan a rutas
+habituales reales ni a ahorro comercial.
+
+La suite completa con motores locales habilitados superó 325 pruebas.
+El recuento general de infracciones y el coste de infraestructura
+por ejecución no están acreditados en esta comparación.
+
+La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
