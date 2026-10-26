@@ -95,3 +95,27 @@ Resultado: superado para tiempo agotado, recuperación y navegación fuera de la
 Alcance: comprobación manual del comportamiento visible. El tiempo observado es aproximado. No se instrumentó la cancelación HTTP desde esta pantalla ni la interrupción del trabajo interno de VROOM. No valida muerte forzada del proceso ni fallos de guardado.
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
+
+## Pruebas automatizadas de recuperación y cancelación
+
+Validación realizada el 2026-10-26 mediante dos pruebas de pantalla con un adaptador controlado y SQLite en memoria.
+
+Estado inicial: jornada de 150 paquetes y 60 paradas, ruta aceptada y un paquete entregado.
+
+Se comprueba que:
+- Ante un error de tipo timeout, aparece el mensaje correspondiente, termina el indicador y se habilita nuevamente el cálculo.
+- Un cálculo posterior obtiene una propuesta y elimina el error.
+- Salir mediante navegación atrás activa la señal de cancelación.
+- Una propuesta completada después de salir no genera excepciones ni aparece al reabrir.
+- Reabrir no inicia automáticamente otro cálculo.
+- Se conservan 149 paquetes pendientes, el evento de entrega y la ruta aceptada con su distancia y fecha de aceptación.
+
+Resultados:
+- Dos pruebas específicas superadas.
+- Análisis estático sin incidencias.
+- Suite habitual: 282 pruebas superadas y 24 omitidas por defecto.
+- git diff --check sin incidencias.
+
+Alcance: el adaptador de prueba simula el error de tiempo agotado; no mide una espera real de 40 segundos. Estas pruebas no utilizan HTTP ni VROOM. La comprobación manual del servicio local se documenta en el apartado anterior.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
