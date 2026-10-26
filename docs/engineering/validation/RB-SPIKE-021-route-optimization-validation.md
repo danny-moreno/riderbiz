@@ -940,7 +940,7 @@ La Issue permite mantener ADR-004 como PROPUESTO y entregar documentación verif
 | Entregas y recogidas | Comprobado como visitas independientes en el motor | No equiparar a transporte con capacidad o precedencia ni a recogidas persistidas en la jornada diaria |
 | Ruta vehicular y grupos peatonales | Ruta vehicular comprobada; representación, progreso y orden manual de portales comprobados en RB-ROUTING-004 | No acredita cálculo peatonal ni integración automática entre recorridos |
 | Fallos externos no bloquean la jornada | Comprobado en escenarios concretos, incluida confirmación de entregas en modo habitual sin motor | No extender a mapas offline, sincronización o condiciones de campo no probadas |
-| Secretos fuera del repositorio | Pendiente de revisión consolidada | Revisar código, configuración e historial pertinente sin mostrar secretos |
+| Secretos fuera del repositorio | Revisión acotada: Gitleaks sin hallazgos en 113 commits y ejemplo sin credenciales | Alcance y límites en RB-ROUTING-007; no es garantía absoluta |
 | Límites y costes documentados | Límites locales comprobados; evaluación económica incompleta | Completar límites del servicio administrado y proyecciones |
 | flutter analyze sin errores | Última ejecución comunicada: sin incidencias | Registrar la ejecución final aplicable |
 | Pruebas automatizadas correctas | Última suite habitual: 297 superadas y 24 omitidas por defecto | Distinguir suite habitual de ejecución con motores locales |
@@ -1017,4 +1017,23 @@ Evidencia y límites: [RB-ROUTING-006 · Recursos y estimación económica preli
 
 La documentación del bloqueo gratuito no constituye una comparación ejecutada entre proveedores. Siguen pendientes la aclaración comercial aplicable, precios Custom y el dimensionamiento de la alternativa abierta.
 
+La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
+
+
+## 37. Privacidad, registros y archivos temporales
+
+Revisión del 2026-10-26:
+[RB-ROUTING-007](RB-ROUTING-007-privacy-and-temporary-data.md).
+
+Se detectó retención de coordenadas sintéticas en los logs de OSRM.
+Se desactivó la conservación de logs de ambos contenedores y se eliminó
+el registro HTTP de VROOM mediante una imagen local derivada.
+
+Las solicitudes JSON se trasladaron del directorio compartido a tmpfs.
+Las cinco pruebas locales seleccionadas finalizaron correctamente.
+Se observaron cero JSON temporales, cero JSON en la carpeta compartida
+y un access.log de cero bytes.
+
+No se acredita borrado forense, limpieza inmediata al cancelar
+ni eliminación de copias anteriores.
 La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.

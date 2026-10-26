@@ -6,6 +6,8 @@ services:
     platform: linux/arm64
     command:
       - osrm-routed
+      - --verbosity
+      - WARNING
       - --algorithm
       - mld
       - --max-table-size
@@ -16,17 +18,24 @@ services:
     ports:
       - "127.0.0.1:5000:5000"
     restart: "no"
+    logging:
+      driver: "none"
 
   vroom:
-    image: ghcr.io/vroom-project/vroom-docker@sha256:189fabbb238f4891d821008b47b62085357be6a74f178656af5b253ced8f7069
+    image: riderbiz-vroom-validation:no-access-log
+    build:
+      context: ./vroom
     platform: linux/arm64
     depends_on:
       - osrm
     environment:
       VROOM_ROUTER: osrm
-      VROOM_LOG: "false"
+    tmpfs:
+      - /tmp/riderbiz-requests:size=16m,mode=1777
     volumes:
       - ./vroom:/conf
     ports:
       - "127.0.0.1:3000:3000"
     restart: "no"
+    logging:
+      driver: "none"

@@ -4,7 +4,7 @@ cliArgs:
   threads: 4
   explore: 5
   limit: '1mb'
-  logdir: '/conf'
+  logdir: '/tmp/riderbiz-requests'
   logsize: '10M'
   maxlocations: 250
   maxvehicles: 1
