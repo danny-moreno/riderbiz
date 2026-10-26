@@ -724,21 +724,24 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 
 ## 22. Validaciones pendientes
 
-- Comparación con órdenes habituales representativos de repartidores; la comparación con el orden inicial sintético ya está completada.
-- Priorización bajo restricciones.
-- Ampliación de bloqueos a escenarios combinados, fallos entre tramos y verificación exhaustiva del presupuesto temporal; el caso básico de 60 tareas con cuatro bloqueos ya está comprobado.
-- Reoptimización con ventanas horarias, bloqueos y grupos peatonales; el caso vehicular básico con tareas completadas ya está comprobado.
-- Recorridos peatonales y separación de tramos.
-- Control del ajuste de coordenadas a la red.
-- Escenarios geográficos y operativos más representativos.
-- Fallos reales del servicio y recuperación de la ruta aceptada.
-- Evaluación de GraphHopper con acceso autorizado.
-- Costes proyectados por repartidor y mes.
-- Medición de recursos de infraestructura.
-- Persistencia y eliminación de información temporal.
-- Ampliación de pruebas físicas a interrupciones durante solicitudes, fallos de guardado y uso en campo; cálculo, aceptación, recuperación tras cierre y desconexión entre solicitudes ya están comprobados en la Samsung SM-X210 mediante USB.
-- Evaluación de una versión estable del motor para producción.
-- Ampliación de ventanas horarias a escenarios superpuestos, varias tareas por portal y volúmenes de 60–120 tareas; los casos básicos y el escenario de tres paradas ya están comprobados.
+Resumen actualizado el 2026-10-26. Los apartados históricos conservan el alcance y los resultados de cada ejecución.
+
+- Demostrar la utilización de la ruta habitual sin solicitar optimización, incluida la operación local y la selección manual de paradas.
+- Completar la evidencia de prioridades bajo restricciones.
+- Validar la representación y separación de grupos peatonales mediante escenarios específicos; representar un grupo no equivale a calcular un recorrido a pie.
+- Ampliar las restricciones combinadas. La estrategia segmentada conserva bloqueos, pero rechaza ventanas horarias y grupos peatonales.
+- Controlar el ajuste de coordenadas a la red vial y ampliar la diversidad geográfica de los escenarios sintéticos.
+- Ampliar las ventanas horarias a casos superpuestos, varias tareas por parada y volúmenes de 60, 80 y 120 tareas.
+- Completar el registro homogéneo de métricas, llamadas externas y motivos de fallo.
+- Documentar el bloqueo de GraphHopper o acreditar acceso de prueba autorizado que permita la comparación.
+- Elaborar la estimación económica para 60, 80 y 120 tareas, con proyecciones para 1, 100 y 1.000 repartidores.
+- Medir los recursos utilizados por la alternativa abierta y distinguir coste local observado de coste proyectado de operación.
+- Revisar secretos, logs, configuración de ejemplo y eliminación de información temporal conforme al alcance de la prueba.
+- Completar la matriz de aceptación de la sección 32 y registrar la conclusión final.
+
+Ya existe evidencia acotada de indisponibilidad del servicio, timeout, cancelación, recuperación y fallos SQL. No se consideran pendientes íntegramente; sus límites se describen en las secciones 26–30 y en RB-UI-003-daily-session.md.
+
+La comparación con recorridos habituales representativos, el uso en campo, el funcionamiento sin USB, la ubicación actual y la evaluación de una versión estable del motor siguen sin acreditarse. Se distinguen de los criterios de cierre de esta prueba exclusivamente sintética.
 
 ## 23. Conclusión parcial
 
@@ -919,3 +922,57 @@ Alcance: las pruebas de progreso reconstruyen solicitudes con estados sintético
 Siguientes fases: confirmaciones y recuperación persistente, prevención de duplicados contables, fallos durante la jornada y evaluación en tablet.
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
+
+## 32. Revisión de criterios de aceptación
+
+Revisión documental realizada el 2026-10-26 sobre los criterios de la Issue #21 y las evidencias incorporadas hasta el PR #42.
+
+La Issue permite mantener ADR-004 como PROPUESTO y entregar documentación verificable del bloqueo de GraphHopper. No exige implementar la interfaz definitiva, navegación, despliegue productivo ni pruebas con información real.
+
+| Criterio de la Issue #21 | Estado de la evidencia | Acción restante |
+|---|---|---|
+| Escenarios sin datos personales reales | Documentado: identificadores y puntos de entrega generados sintéticamente sobre cartografía de Navarra | Mantener la trazabilidad del origen sintético |
+| Pruebas con 60, 80 y 120 tareas | Comprobado con motores locales | Conservar resultados y condiciones |
+| Dominio independiente del proveedor | Comprobado para los adaptadores implementados | No extender la conclusión a proveedores no probados |
+| Ruta habitual sin optimización | Evidencia parcial: se conserva una ruta aceptada | Probar expresamente el flujo sin solicitar optimización |
+| Reoptimización solo de pendientes | Comprobado en escenarios sintéticos, incluidos estados persistidos | Conservar el alcance documentado |
+| Tareas completadas y bloqueadas respetadas | Comprobado en casos específicos | Explicitar límites de restricciones combinadas |
+| Entregas y recogidas | Comprobado como visitas independientes en el motor | No equiparar a transporte con capacidad o precedencia ni a recogidas persistidas en la jornada diaria |
+| Ruta vehicular y grupos peatonales | Ruta vehicular comprobada; grupos representados en el dominio | Completar evidencia específica de agrupación y separación |
+| Fallos externos no bloquean la jornada | Recuperación y conservación comprobadas en escenarios concretos | Completar la operación habitual sin motor |
+| Secretos fuera del repositorio | Pendiente de revisión consolidada | Revisar código, configuración e historial pertinente sin mostrar secretos |
+| Límites y costes documentados | Límites locales comprobados; evaluación económica incompleta | Completar límites del servicio administrado y proyecciones |
+| flutter analyze sin errores | Última ejecución comunicada: sin incidencias | Registrar la ejecución final aplicable |
+| Pruebas automatizadas correctas | Última suite habitual: 286 superadas y 24 omitidas por defecto | Distinguir suite habitual de ejecución con motores locales |
+| git diff --check sin errores | Sin incidencias en la última validación comunicada | Repetir sobre el cambio final |
+| Resultados y limitaciones documentados | Evidencia repartida entre este documento y documentos complementarios | Consolidar la conclusión y referencias |
+| Estado de ADR-004 según evidencia | Permanece PROPUESTO | No aceptar automáticamente al cerrar la Issue |
+| Pull request relacionado | Existen PR de implementación y validación | Relacionar el PR de conclusión con la Issue |
+
+### Evidencia complementaria
+
+- RB-UI-003-daily-session.md: jornada sintética de 150 paquetes, progreso, recuperación, cancelación y fallos de guardado en servicios y pantalla.
+- RB-ACCOUNTING-001-daily-volume-persistence.md: persistencia contable con volúmenes de 100 a 500 paquetes.
+- RB-ROUTING-001-location-capacity.md: límites de ubicaciones con paquetes agrupados.
+- RB-ROUTING-002-persisted-daily-reoptimization.md: reoptimización con entregas persistidas.
+- RB-ROUTING-003-route-plan-persistence.md: persistencia del plan y recuperación de estados.
+
+Las pruebas de fallos SQL usan bases temporales o en memoria. No acreditan disco lleno, corrupción, muerte del proceso ni pérdida de alimentación. Las pruebas con adaptadores controlados no equivalen a solicitudes reales al motor.
+
+### Bloqueo documental inicial de GraphHopper
+
+Consulta de documentación pública realizada el 2026-10-26:
+
+- El plan Free publica 5 localizaciones por solicitud, un vehículo y 500 créditos diarios.
+- Ese límite impide ejecutar directamente los escenarios actuales de 60, 80 y 120 paradas distintas mediante el plan gratuito publicado.
+- Se cuentan localizaciones únicas; un origen diferente puede incrementar el total respecto al número de paradas.
+- No se ha acreditado en esta revisión una autorización especial que amplíe esos límites.
+- Esta comprobación es documental: no se ejecutaron solicitudes GraphHopper, no se activó facturación ni se contrató un plan.
+- Queda pendiente completar precios, condiciones y proyecciones económicas. Los créditos no equivalen a una tarifa monetaria fija por ejecución.
+
+Fuentes oficiales:
+- https://www.graphhopper.com/pricing/
+- https://www.graphhopper.com/faq/what-is-one-credit/
+- https://support.graphhopper.com/support/solutions/articles/44001038156-what-happens-if-i-exceed-the-location-or-the-vehicle-limit-
+
+La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
