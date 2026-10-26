@@ -119,3 +119,23 @@ Resultados:
 Alcance: el adaptador de prueba simula el error de tiempo agotado; no mide una espera real de 40 segundos. Estas pruebas no utilizan HTTP ni VROOM. La comprobación manual del servicio local se documenta en el apartado anterior.
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
+
+## Fallos de escritura y reintento en SQLite
+
+Validación automatizada realizada el 2026-10-26 con una base SQLite temporal en disco, una jornada de 150 paquetes, una ruta aceptada y una entrega registrada.
+
+Se provocaron dos fallos mediante triggers exclusivos de la base de prueba:
+- Rechazo de la inserción del evento de entrega: la transacción revierte la actualización del paquete y conserva los paquetes, eventos y ruta anteriores.
+- Rechazo de la actualización de la ruta aceptada: se conserva íntegramente la ruta anterior, sin modificar paquetes ni eventos.
+
+Después de cada fallo se cerró y reabrió SQLite para comprobar los datos persistidos. Tras retirar el trigger, el reintento se completó correctamente y se verificó nuevamente después de reabrir la base.
+
+Resultados:
+- Dos pruebas específicas superadas.
+- Análisis estático sin incidencias.
+- Suite habitual: 284 pruebas superadas y 24 omitidas por defecto.
+- git diff --check sin incidencias.
+
+Alcance: fallos controlados de sentencias SQL y recuperación en los servicios. No valida la reacción visual de la pantalla, disco lleno, corrupción de SQLite, muerte del proceso ni pérdida de alimentación.
+
+La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
