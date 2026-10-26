@@ -158,37 +158,32 @@ Cada paso debe terminar correctamente antes de ejecutar el siguiente. No reproce
 
 ## Arranque de servicios
 
-Validar Compose:
+Ejecutar desde la raíz del repositorio:
 
 ```bash
-docker-compose \
-  -f tools/route-optimization/compose.yml \
-  config --quiet
+docker-compose -f tools/route-optimization/compose.yml config --quiet
+docker-compose -f tools/route-optimization/compose.yml up -d --build
+docker-compose -f tools/route-optimization/compose.yml ps -a
 ```
 
-Arrancar:
+Esperar a que VROOM aparezca como healthy.
+depends_on no garantiza que OSRM esté listo para recibir solicitudes.
 
-```bash
-docker-compose \
-  -f tools/route-optimization/compose.yml \
-  up -d
-```
+VROOM utiliza una imagen local derivada de la imagen fijada por digest.
+Un parche elimina el registro HTTP de acceso. La construcción falla
+si no encuentra exactamente el código esperado del proveedor.
+El contexto de construcción incluye únicamente el Dockerfile y el parche.
 
-Consultar estado y registros:
+Ambos servicios utilizan el driver de logs none. Sus registros de stdout
+y stderr no quedan disponibles mediante docker logs.
+OSRM utiliza además verbosidad WARNING.
 
-```bash
-docker-compose \
-  -f tools/route-optimization/compose.yml \
-  ps
-```
+Las solicitudes temporales se escriben en /tmp/riderbiz-requests,
+montado como tmpfs con un máximo de 16 MiB.
+El arranque del proveedor puede crear /conf/access.log vacío;
+su existencia no implica que el registro HTTP esté activo.
 
-```bash
-docker-compose \
-  -f tools/route-optimization/compose.yml \
-  logs --tail=40
-```
-
-`depends_on` establece el orden de arranque, pero no garantiza que OSRM esté listo para recibir solicitudes.
+Véase [RB-ROUTING-007](../../docs/engineering/validation/RB-ROUTING-007-privacy-and-temporary-data.md).
 
 ## Comprobación de OSRM
 
@@ -280,17 +275,18 @@ Detener la máquina virtual para liberar recursos:
 colima stop riderbiz
 ```
 
-## Limitaciones pendientes
+## Alcance y limitaciones actuales
 
-- Integración con el adaptador Dart.
-- Escenarios reales del motor con 60, 80 y 120 tareas sintéticas.
-- Validación de ventanas horarias y paradas bloqueadas.
-- Recogidas y entregas.
-- Medición comparable del orden habitual.
-- Tratamiento de tareas sin asignar y respuestas inválidas.
-- Fallos de red, timeout y cancelación.
-- Recorridos peatonales.
-- Comparación con GraphHopper.
-- Proyección de costes de infraestructura y operación.
+La integración Dart y las pruebas locales de 60, 80 y 120 tareas,
+restricciones, recuperación y persistencia cuentan con evidencia en
+[RB-SPIKE-021](../../docs/engineering/validation/RB-SPIKE-021-route-optimization-validation.md).
 
-La comprobación mínima de dos tareas demuestra conectividad entre servicios; no demuestra todavía la calidad de optimización exigida por ADR-004.
+Los resultados corresponden a los escenarios registrados; no acreditan
+todas las combinaciones de restricciones ni funcionamiento en producción.
+Los grupos peatonales están representados, sin navegación a pie validada.
+GraphHopper continúa sin integración ejecutada; su bloqueo está documentado.
+Las estimaciones económicas y de recursos tienen alcance preliminar.
+
+La revisión de logs y temporales no acredita borrado forense, ausencia
+de copias anteriores ni ausencia de swap.
+La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
