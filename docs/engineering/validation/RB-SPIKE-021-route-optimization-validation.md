@@ -2,9 +2,17 @@
 
 ## Estado
 
-EN CURSO — evidencia parcial de arquitectura y motor local.
+PRUEBA SINTÉTICA CONCLUIDA CON LIMITACIONES.
 
 ADR-004 permanece en estado PROPUESTO.
+
+Revisión final del 2026-10-26 con evidencia incorporada hasta el PR #49.
+Se propone cerrar la Issue #21 al integrar el PR de conclusión y superar
+sus comprobaciones finales.
+
+Las declaraciones de estado en los apartados históricos corresponden
+al momento de cada ejecución. Las secciones 22, 23 y 32 recogen
+la conclusión vigente.
 
 ## Fecha
 
@@ -24,7 +32,7 @@ Evaluar una arquitectura independiente del proveedor y comprobar su integración
 
 La prueba deberá permitir comparar propuestas con el orden habitual, gestionar únicamente tareas pendientes y evaluar restricciones, conectividad, rendimiento y coste.
 
-Este documento registra resultados parciales. No constituye todavía la aceptación de ADR-004 ni la selección de un proveedor de producción.
+Este documento consolida los resultados de la prueba sintética y sus limitaciones. No constituye la aceptación de ADR-004 ni la selección de un proveedor de producción.
 
 ## 2. Alcance comprobado
 
@@ -722,36 +730,62 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 | `ed02a48` | Contraste del servicio devuelto con los trabajos solicitados |
 | `d82c0e1` | Base de datos separada para validar entregas parcialmente completadas |
 
-## 22. Validaciones pendientes
+## 22. Límites y trabajo posterior a la prueba
 
-Resumen actualizado el 2026-10-26. Los apartados históricos conservan el alcance y los resultados de cada ejecución.
+La prueba concluye dentro de su alcance exclusivamente sintético.
+Los siguientes límites condicionan una fase posterior:
 
-- Ampliar la operación manual cuando sea necesario. La selección del orden sintético guardado, la confirmación de paquetes sin motor y la recuperación están comprobadas en RB-UI-004-usual-route-without-optimizer.md; no se ha validado un editor completo de secuencias ni una ruta habitual real.
-- Ampliar prioridades a escenarios más complejos cuando corresponda. La competencia entre dos tareas bajo ventanas horarias, el intercambio de identificadores y el rechazo de soluciones parciales están comprobados en RB-ROUTING-005-priority-time-windows.md.
-- Validar la representación y separación de grupos peatonales mediante escenarios específicos; representar un grupo no equivale a calcular un recorrido a pie.
-- Ampliar las restricciones combinadas. La estrategia segmentada conserva bloqueos, pero rechaza ventanas horarias y grupos peatonales.
-- Controlar el ajuste de coordenadas a la red vial y ampliar la diversidad geográfica de los escenarios sintéticos.
-- Ampliar las ventanas horarias a casos superpuestos, varias tareas por parada y volúmenes de 60, 80 y 120 tareas.
-- Completar el registro homogéneo de métricas, llamadas externas y motivos de fallo.
-- Documentar el bloqueo de GraphHopper o acreditar acceso de prueba autorizado que permita la comparación.
-- Elaborar la estimación económica para 60, 80 y 120 tareas, con proyecciones para 1, 100 y 1.000 repartidores.
-- Medir los recursos utilizados por la alternativa abierta y distinguir coste local observado de coste proyectado de operación.
-- Revisar secretos, logs, configuración de ejemplo y eliminación de información temporal conforme al alcance de la prueba.
-- Completar la matriz de aceptación de la sección 32 y registrar la conclusión final.
+- No se acredita ahorro frente a rutas habituales representativas.
+- El modo habitual utiliza un orden sintético guardado; no hay un
+  editor completo de secuencias ni validación de preferencias reales.
+- Los grupos peatonales tienen representación, progreso y orden manual;
+  no se calcula ni integra automáticamente una ruta a pie.
+- La estrategia segmentada conserva bloqueos, pero rechaza ventanas
+  horarias y grupos peatonales. No se acreditan todas sus combinaciones.
+- Las ventanas horarias y prioridades se comprobaron en casos concretos;
+  falta ampliar casos superpuestos y varias tareas por parada.
+- Las recogidas se probaron como visitas independientes. La jornada
+  persistida no constituye un flujo completo de recogidas.
+- La contabilidad persistió hasta 500 paquetes; esto no acredita
+  optimización de 500 paradas. El entorno limita ubicaciones a 250,
+  incluyendo las que correspondan al origen y destino.
+- Los recursos observados no dimensionan infraestructura productiva.
+  Las proyecciones económicas no constituyen presupuesto aprobado.
+- GraphHopper no se ejecutó: se documentan el bloqueo y sus límites.
+- No se acreditan borrado forense, limpieza inmediata al cancelar,
+  disco lleno, corrupción, pérdida de alimentación ni todas las
+  interrupciones posibles.
+- No se validaron operación en campo, ubicación actual, funcionamiento
+  sin USB, cobertura europea ni una versión estable para producción.
 
-Ya existe evidencia acotada de indisponibilidad del servicio, timeout, cancelación, recuperación y fallos SQL. No se consideran pendientes íntegramente; sus límites se describen en las secciones 26–30 y en RB-UI-003-daily-session.md.
+Estos puntos se conservan como límites explícitos y trabajo posterior.
+El cierre de esta prueba no acepta automáticamente ADR-004 ni habilita
+datos reales, contratación, facturación o despliegue externo.
 
-La comparación con recorridos habituales representativos, el uso en campo, el funcionamiento sin USB, la ubicación actual y la evaluación de una versión estable del motor siguen sin acreditarse. Se distinguen de los criterios de cierre de esta prueba exclusivamente sintética.
+## 23. Conclusión de la prueba sintética
 
-## 23. Conclusión parcial
+La evidencia demuestra viabilidad técnica local y acotada del dominio
+independiente del proveedor y de su integración con VROOM y OSRM.
 
-La arquitectura permite conectar el dominio de RiderBiz con VROOM y OSRM locales.
+Se ejecutaron escenarios de 60, 80 y 120 tareas, entregas y recogidas
+independientes, reoptimización de pendientes, bloqueos y restricciones
+en casos específicos. Existen evidencias de persistencia, aceptación
+explícita, operación sin optimizador y recuperación ante fallos concretos.
 
-El motor resolvió los escenarios vehiculares sintéticos de 60, 80 y 120 tareas, con todas las paradas incluidas y latencias locales bajas en el entorno medido.
+La comparación homogénea mostró mejoras frente al orden sintético
+generado. No demuestra ahorro frente a repartidores experimentados.
+GraphHopper permanece sin comparación ejecutada; la alternativa de
+documentar verificablemente el bloqueo está contemplada en la Issue.
 
-Todavía no existe evidencia suficiente para aceptar ADR-004, seleccionar proveedor definitivo o afirmar ahorro operativo para repartidores.
+Se dispone de evidencia suficiente para proponer el cierre de la
+Issue #21 como prueba sintética concluida con limitaciones.
 
-La Issue #21 permanece abierta.
+ADR-004 permanece PROPUESTO. La compatibilidad económica productiva,
+la comprensión y utilidad operativa para usuarios y los riesgos de
+producción requieren evidencia adicional.
+
+VROOM + OSRM sigue siendo una alternativa candidata para la siguiente
+fase; no se selecciona todavía un proveedor productivo.
 
 ## 24. Fuentes y referencias
 
@@ -923,59 +957,71 @@ Siguientes fases: confirmaciones y recuperación persistente, prevención de dup
 
 La Issue #21 permanece abierta y ADR-004 continúa pendiente de validación.
 
-## 32. Revisión de criterios de aceptación
+## 32. Revisión final de criterios de aceptación
 
-Revisión documental realizada el 2026-10-26 sobre los criterios de la Issue #21 y las evidencias incorporadas hasta el PR #42.
+Revisión del 2026-10-26 con evidencia incorporada hasta el PR #49.
 
-La Issue permite mantener ADR-004 como PROPUESTO y entregar documentación verificable del bloqueo de GraphHopper. No exige implementar la interfaz definitiva, navegación, despliegue productivo ni pruebas con información real.
+La conclusión corresponde al alcance sintético de la Issue #21.
+Esta permite documentación verificable del bloqueo de GraphHopper
+y mantener ADR-004 como PROPUESTO.
 
-| Criterio de la Issue #21 | Estado de la evidencia | Acción restante |
-|---|---|---|
-| Escenarios sin datos personales reales | Documentado: identificadores y puntos de entrega generados sintéticamente sobre cartografía de Navarra | Mantener la trazabilidad del origen sintético |
-| Pruebas con 60, 80 y 120 tareas | Comprobado con motores locales | Conservar resultados y condiciones |
-| Dominio independiente del proveedor | Comprobado para los adaptadores implementados | No extender la conclusión a proveedores no probados |
-| Ruta habitual sin optimización | Comprobado para el orden sintético guardado: selección explícita, entregas sin motor y recuperación | Mantener los límites de RB-UI-004; no equivale a un recorrido habitual real |
-| Reoptimización solo de pendientes | Comprobado en escenarios sintéticos, incluidos estados persistidos | Conservar el alcance documentado |
-| Tareas completadas y bloqueadas respetadas | Comprobado en casos específicos | Explicitar límites de restricciones combinadas |
-| Entregas y recogidas | Comprobado como visitas independientes en el motor | No equiparar a transporte con capacidad o precedencia ni a recogidas persistidas en la jornada diaria |
-| Ruta vehicular y grupos peatonales | Ruta vehicular comprobada; representación, progreso y orden manual de portales comprobados en RB-ROUTING-004 | No acredita cálculo peatonal ni integración automática entre recorridos |
-| Fallos externos no bloquean la jornada | Comprobado en escenarios concretos, incluida confirmación de entregas en modo habitual sin motor | No extender a mapas offline, sincronización o condiciones de campo no probadas |
-| Secretos fuera del repositorio | Revisión acotada: Gitleaks sin hallazgos en 113 commits y ejemplo sin credenciales | Alcance y límites en RB-ROUTING-007; no es garantía absoluta |
-| Límites y costes documentados | Límites locales comprobados; evaluación económica incompleta | Completar límites del servicio administrado y proyecciones |
-| flutter analyze sin errores | Última ejecución comunicada: sin incidencias | Registrar la ejecución final aplicable |
-| Pruebas automatizadas correctas | Última suite habitual: 297 superadas y 24 omitidas por defecto | Distinguir suite habitual de ejecución con motores locales |
-| git diff --check sin errores | Sin incidencias en la última validación comunicada | Repetir sobre el cambio final |
-| Resultados y limitaciones documentados | Evidencia repartida entre este documento y documentos complementarios | Consolidar la conclusión y referencias |
-| Estado de ADR-004 según evidencia | Permanece PROPUESTO | No aceptar automáticamente al cerrar la Issue |
-| Pull request relacionado | Existen PR de implementación y validación | Relacionar el PR de conclusión con la Issue |
+| Criterio | Conclusión y alcance |
+|---|---|
+| Ausencia de datos personales reales | Identificadores y puntos generados sintéticamente sobre cartografía real; sin destinatarios reales |
+| Escenarios de 60, 80 y 120 tareas | Ejecutados con motores locales |
+| Dominio independiente del proveedor | Comprobado para los adaptadores implementados; GraphHopper no ejecutado |
+| Ruta habitual sin optimización | Orden sintético guardado, selección, entregas y recuperación sin motor; RB-UI-004 |
+| Reoptimización solo de pendientes | Comprobada, incluidos estados persistidos; RB-ROUTING-002 y 003 |
+| Completadas y bloqueadas respetadas | Comprobadas en escenarios concretos; combinaciones limitadas según sección 22 |
+| Entregas y recogidas | Representadas y probadas como visitas independientes; sin acreditar capacidad o precedencia |
+| Vehículo y grupos peatonales | Ruta vehicular y representación, progreso y orden manual de portales; RB-ROUTING-004 |
+| Fallos externos no bloquean la jornada | Conservación del plan y operación habitual comprobadas ante fallos concretos; RB-UI-003 y 004 |
+| Secretos fuera del repositorio | Revisión acotada con Gitleaks y ejemplo sin credenciales; límites en RB-ROUTING-007 |
+| Límites y costes documentados | Bloqueo, proyecciones y recursos observados en RB-ROUTING-006; sin presupuesto productivo validado |
+| flutter analyze | Última ejecución sobre el código incorporado: sin incidencias |
+| Pruebas automatizadas | 325 superadas con RUN_LOCAL_VROOM=true y concurrency=1 |
+| git diff --check | Comprobación final requerida sobre este cambio documental antes de integrarlo |
+| Resultados y limitaciones | Consolidados aquí y en las evidencias complementarias |
+| Estado de ADR-004 | Se mantiene PROPUESTO según la evidencia |
+| Pull request relacionado | Cierre condicionado a integrar el PR de conclusión relacionado con #21 |
 
-### Evidencia complementaria
+### Lectura de los resultados
 
-- RB-UI-003-daily-session.md: jornada sintética de 150 paquetes, progreso, recuperación, cancelación y fallos de guardado en servicios y pantalla.
-- RB-ACCOUNTING-001-daily-volume-persistence.md: persistencia contable con volúmenes de 100 a 500 paquetes.
-- RB-ROUTING-001-location-capacity.md: límites de ubicaciones con paquetes agrupados.
-- RB-ROUTING-002-persisted-daily-reoptimization.md: reoptimización con entregas persistidas.
-- RB-ROUTING-003-route-plan-persistence.md: persistencia del plan y recuperación de estados.
+RB-ROUTING-008 reúne comparación, cinco repeticiones por volumen,
+entregas, recogidas y solicitudes observadas. El recuento de infracciones,
+las llamadas internas entre motores y el coste de infraestructura
+por ejecución no se midieron de forma general; permanecen identificados
+como no acreditados. Las restricciones cuentan con pruebas específicas.
 
-Las pruebas de fallos SQL usan bases temporales o en memoria. No acreditan disco lleno, corrupción, muerte del proceso ni pérdida de alimentación. Las pruebas con adaptadores controlados no equivalen a solicitudes reales al motor.
+El bloqueo de GraphHopper y las proyecciones para 60, 80 y 120 tareas
+y para 1, 100 y 1.000 repartidores se documentan en RB-ROUTING-006.
+No se ejecutaron solicitudes GraphHopper, se contrató un plan ni
+se activó facturación.
 
-### Bloqueo documental inicial de GraphHopper
+La revisión de privacidad está acotada: no certifica ausencia absoluta
+de secretos ni eliminación forense de información.
 
-Consulta de documentación pública realizada el 2026-10-26:
+### Evidencias complementarias
 
-- El plan Free publica 5 localizaciones por solicitud, un vehículo y 500 créditos diarios.
-- Ese límite impide ejecutar directamente los escenarios actuales de 60, 80 y 120 paradas distintas mediante el plan gratuito publicado.
-- Se cuentan localizaciones únicas; un origen diferente puede incrementar el total respecto al número de paradas.
-- No se ha acreditado en esta revisión una autorización especial que amplíe esos límites.
-- Esta comprobación es documental: no se ejecutaron solicitudes GraphHopper, no se activó facturación ni se contrató un plan.
-- Queda pendiente completar precios, condiciones y proyecciones económicas. Los créditos no equivalen a una tarifa monetaria fija por ejecución.
+- [RB-UI-003-daily-session.md](RB-UI-003-daily-session.md)
+- [RB-UI-004-usual-route-without-optimizer.md](RB-UI-004-usual-route-without-optimizer.md)
+- [RB-ACCOUNTING-001-daily-volume-persistence.md](RB-ACCOUNTING-001-daily-volume-persistence.md)
+- [RB-ROUTING-001-location-capacity.md](RB-ROUTING-001-location-capacity.md)
+- [RB-ROUTING-002-persisted-daily-reoptimization.md](RB-ROUTING-002-persisted-daily-reoptimization.md)
+- [RB-ROUTING-003-route-plan-persistence.md](RB-ROUTING-003-route-plan-persistence.md)
+- [RB-ROUTING-004-walking-cluster-progress.md](RB-ROUTING-004-walking-cluster-progress.md)
+- [RB-ROUTING-005-priority-time-windows.md](RB-ROUTING-005-priority-time-windows.md)
+- [RB-ROUTING-006-cost-and-resources.md](RB-ROUTING-006-cost-and-resources.md)
+- [RB-ROUTING-007-privacy-and-temporary-data.md](RB-ROUTING-007-privacy-and-temporary-data.md)
+- [RB-ROUTING-008-comparable-metrics.md](RB-ROUTING-008-comparable-metrics.md)
 
-Fuentes oficiales:
-- https://www.graphhopper.com/pricing/
-- https://www.graphhopper.com/faq/what-is-one-credit/
-- https://support.graphhopper.com/support/solutions/articles/44001038156-what-happens-if-i-exceed-the-location-or-the-vehicle-limit-
+### Decisión de cierre
 
-La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
+Se propone cerrar la Issue #21 al integrar este cambio y superar
+las comprobaciones finales, conservando expresamente los límites.
+
+ADR-004 continúa PROPUESTO. El cierre no equivale a una aprobación
+productiva ni acredita todas sus hipótesis de producto.
 
 ## 33. Orden habitual sin optimizador
 

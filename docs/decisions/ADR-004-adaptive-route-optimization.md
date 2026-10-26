@@ -505,3 +505,26 @@ Este ADR deberá revisarse si:
 ## 24. Historial
 
 - Versión 0.1: evidencia, alternativas, matriz funcional, arquitectura independiente del proveedor y decisión provisional.
+
+- Revisión del 2026-10-26: evidencia de la prueba técnica #21;
+  se mantiene el estado PROPUESTO.
+
+## 25. Revisión tras la prueba técnica de la Issue #21
+
+La evidencia se consolida en
+[RB-SPIKE-021](../engineering/validation/RB-SPIKE-021-route-optimization-validation.md).
+
+Se comprobó viabilidad técnica local y acotada de la arquitectura
+independiente del proveedor, operación con VROOM/OSRM, reoptimización
+de pendientes, persistencia y degradación ante fallos concretos.
+
+GraphHopper no se ejecutó; se documentaron el bloqueo y las proyecciones.
+Las mejoras medidas corresponden a órdenes sintéticos generados,
+no a rutas habituales representativas de repartidores.
+
+ADR-004 permanece PROPUESTO. No se ha demostrado suficientemente
+compatibilidad económica productiva, comprensión y valor operativo
+para usuarios ni ausencia de riesgos bloqueantes en producción.
+
+El cierre de la prueba #21 no selecciona proveedor definitivo,
+no aprueba despliegue productivo y no amplía sus autorizaciones.
