@@ -727,7 +727,7 @@ Las pruebas sintéticas no validan por sí solas la eliminación verificable exi
 Resumen actualizado el 2026-10-26. Los apartados históricos conservan el alcance y los resultados de cada ejecución.
 
 - Ampliar la operación manual cuando sea necesario. La selección del orden sintético guardado, la confirmación de paquetes sin motor y la recuperación están comprobadas en RB-UI-004-usual-route-without-optimizer.md; no se ha validado un editor completo de secuencias ni una ruta habitual real.
-- Completar la evidencia de prioridades bajo restricciones.
+- Ampliar prioridades a escenarios más complejos cuando corresponda. La competencia entre dos tareas bajo ventanas horarias, el intercambio de identificadores y el rechazo de soluciones parciales están comprobados en RB-ROUTING-005-priority-time-windows.md.
 - Validar la representación y separación de grupos peatonales mediante escenarios específicos; representar un grupo no equivale a calcular un recorrido a pie.
 - Ampliar las restricciones combinadas. La estrategia segmentada conserva bloqueos, pero rechaza ventanas horarias y grupos peatonales.
 - Controlar el ajuste de coordenadas a la red vial y ampliar la diversidad geográfica de los escenarios sintéticos.
@@ -994,3 +994,15 @@ Se comprueba la separación entre ancla de estacionamiento, portales y tareas pe
 Evidencia y límites: [RB-ROUTING-004 · Progreso de grupos peatonales](RB-ROUTING-004-walking-cluster-progress.md).
 
 No constituye cálculo de una ruta peatonal ni integración automática con el motor vehicular. La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
+
+## 35. Prioridades bajo restricciones horarias
+
+Cuatro pruebas con motores locales comprobaron la selección de tareas bajo ventanas restrictivas, la asignación de ambas cuando existe tiempo suficiente y la exclusión de una tarea urgente que no puede cumplir su ventana.
+
+RiderBiz mantiene el rechazo de las soluciones parciales mediante incompleteSolution.
+
+Ejecución conjunta del 2026-10-26: 325 pruebas superadas, ninguna omitida, con RUN_LOCAL_VROOM=true y concurrencia 1. Este resultado se distingue de las ejecuciones habituales con pruebas locales desactivadas.
+
+Evidencia y límites: [RB-ROUTING-005 · Prioridades bajo restricciones horarias](RB-ROUTING-005-priority-time-windows.md).
+
+La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
