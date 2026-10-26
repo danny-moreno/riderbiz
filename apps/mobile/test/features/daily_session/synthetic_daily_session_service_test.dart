@@ -132,4 +132,88 @@ void main() {
       expect(await db.select(db.deliveryEvents).get(), isEmpty);
     },
   );
+
+  test(
+    'restores usual order and delivery progress from disk without optimization',
+    () async {
+      final service = SyntheticDailySessionService(db);
+      await service.prepare();
+      final initial = await service.loadPlan();
+
+      expect(await AcceptedRouteStore(db).loadSelection(initial.id), isNull);
+
+      await service.useUsualOrder();
+      final selected = await AcceptedRouteStore(db).loadSelection(initial.id);
+      expect(selected!.mode, RouteSelectionMode.usual);
+      expect(selected.metrics, isNull);
+      expect(selected.stopOrder, initial.currentOrder);
+
+      final firstStop = initial.stops.first;
+      expect(firstStop.taskIds.length, greaterThan(1));
+      final firstPackage = firstStop.taskIds.first;
+      final secondPackage = firstStop.taskIds[1];
+      await service.confirmPackage(firstPackage);
+
+      await db.close();
+      db = RiderBizDatabase.forTesting(NativeDatabase(file));
+      final restoredService = SyntheticDailySessionService(db);
+      await restoredService.prepare();
+
+      final restored = await restoredService.loadPlan();
+      final selection = await AcceptedRouteStore(db).loadSelection(initial.id);
+      expect(restored.pendingTasks, hasLength(149));
+      expect(
+        restored.tasks.singleWhere((task) => task.id == firstPackage).status,
+        RouteTaskStatus.completed,
+      );
+      expect(selection!.mode, RouteSelectionMode.usual);
+      expect(selection.stopOrder, selected.stopOrder);
+      expect(selection.acceptedAt, selected.acceptedAt);
+      expect(selection.metrics, isNull);
+
+      await expectLater(
+        restoredService.confirmPackage(firstPackage),
+        throwsStateError,
+      );
+      await restoredService.confirmPackage(secondPackage);
+
+      await db.close();
+      db = RiderBizDatabase.forTesting(NativeDatabase(file));
+
+      final finalPlan = await SyntheticDailySessionService(db).loadPlan();
+      expect(finalPlan.pendingTasks, hasLength(148));
+      final packages = await db.select(db.syntheticPackages).get();
+      expect(packages, hasLength(150));
+      final delivered = packages.where(
+        (package) => package.status == 'delivered',
+      );
+      expect(delivered.map((package) => package.id).toSet(), {
+        firstPackage,
+        secondPackage,
+      });
+      expect(
+        delivered.fold<int>(
+          0,
+          (total, package) => total + package.unitPriceMinorSnapshot!,
+        ),
+        240,
+      );
+      expect(
+        delivered.every((package) => package.currencySnapshot == 'EUR'),
+        isTrue,
+      );
+      final events = await db.select(db.deliveryEvents).get();
+      expect(events, hasLength(2));
+      expect(events.map((event) => event.packageId).toSet(), {
+        firstPackage,
+        secondPackage,
+      });
+
+      final finalSelection = await AcceptedRouteStore(db)
+          .loadSelection(initial.id);
+      expect(finalSelection!.stopOrder, selected.stopOrder);
+      expect(finalSelection.acceptedAt, selected.acceptedAt);
+      expect(finalSelection.metrics, isNull);
+    },
+  );
 }
