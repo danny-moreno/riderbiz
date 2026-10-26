@@ -938,12 +938,12 @@ La Issue permite mantener ADR-004 como PROPUESTO y entregar documentación verif
 | Reoptimización solo de pendientes | Comprobado en escenarios sintéticos, incluidos estados persistidos | Conservar el alcance documentado |
 | Tareas completadas y bloqueadas respetadas | Comprobado en casos específicos | Explicitar límites de restricciones combinadas |
 | Entregas y recogidas | Comprobado como visitas independientes en el motor | No equiparar a transporte con capacidad o precedencia ni a recogidas persistidas en la jornada diaria |
-| Ruta vehicular y grupos peatonales | Ruta vehicular comprobada; grupos representados en el dominio | Completar evidencia específica de agrupación y separación |
+| Ruta vehicular y grupos peatonales | Ruta vehicular comprobada; representación, progreso y orden manual de portales comprobados en RB-ROUTING-004 | No acredita cálculo peatonal ni integración automática entre recorridos |
 | Fallos externos no bloquean la jornada | Comprobado en escenarios concretos, incluida confirmación de entregas en modo habitual sin motor | No extender a mapas offline, sincronización o condiciones de campo no probadas |
 | Secretos fuera del repositorio | Pendiente de revisión consolidada | Revisar código, configuración e historial pertinente sin mostrar secretos |
 | Límites y costes documentados | Límites locales comprobados; evaluación económica incompleta | Completar límites del servicio administrado y proyecciones |
 | flutter analyze sin errores | Última ejecución comunicada: sin incidencias | Registrar la ejecución final aplicable |
-| Pruebas automatizadas correctas | Última suite habitual: 291 superadas y 24 omitidas por defecto | Distinguir suite habitual de ejecución con motores locales |
+| Pruebas automatizadas correctas | Última suite habitual: 297 superadas y 24 omitidas por defecto | Distinguir suite habitual de ejecución con motores locales |
 | git diff --check sin errores | Sin incidencias en la última validación comunicada | Repetir sobre el cambio final |
 | Resultados y limitaciones documentados | Evidencia repartida entre este documento y documentos complementarios | Consolidar la conclusión y referencias |
 | Estado de ADR-004 según evidencia | Permanece PROPUESTO | No aceptar automáticamente al cerrar la Issue |
@@ -986,3 +986,11 @@ La jornada permite seleccionar el orden sintético almacenado y confirmar entreg
 Evidencia y límites: [RB-UI-004 · Orden habitual sin optimizador](RB-UI-004-usual-route-without-optimizer.md).
 
 La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
+
+## 34. Representación y progreso de grupos peatonales
+
+Se comprueba la separación entre ancla de estacionamiento, portales y tareas pendientes, incluido orden manual sin modificar el plan original. Se ejecutaron casos de 60, 80 y 120 tareas.
+
+Evidencia y límites: [RB-ROUTING-004 · Progreso de grupos peatonales](RB-ROUTING-004-walking-cluster-progress.md).
+
+No constituye cálculo de una ruta peatonal ni integración automática con el motor vehicular. La Issue #21 permanece abierta y ADR-004 continúa PROPUESTO.
